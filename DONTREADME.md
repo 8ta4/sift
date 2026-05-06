@@ -18,6 +18,14 @@ Yes. You can pair `sift` with Vimium to get around.
 
 Yes. You can pair `sift` with uBO Lite to kill ads.
 
+### Latency
+
+> What's the latency target?
+
+The goal is under 0.1 seconds.
+
+[0.1 second is about the limit for having the user feel that the system is reacting instantaneously](https://www.nngroup.com/articles/response-times-3-important-limits/#:~:text=0.1%20second%20is%20about%20the%20limit%20for%20having%20the%20user%20feel%20that%20the%20system%20is%20reacting%20instantaneously).
+
 ## References
 
 > Can `sift` reuse tabs for references?
