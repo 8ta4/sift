@@ -51,11 +51,11 @@ Press `d` in Normal mode or Visual mode. Think "done".
 
 > How do I open references for an item?
 
-Press `s` in Normal mode or Visual mode. Think "see". In Visual mode, `s` opens the references only for the item under the cursor.
+Press `s` in Normal mode or Visual mode. Think "see". See? In Visual mode, `s` opens the references only for the item under the cursor.
 
-> How do I mark an item to see it again?
+> How do I flag an item for a second pass?
 
-Press `a` in Normal mode or Visual mode. Think "again". Seriously. Think "again".
+Press `a` in Normal mode or Visual mode. Think "again". Seriously. Think again.
 
 > How do I unmark an item?
 
