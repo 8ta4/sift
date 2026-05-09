@@ -12,7 +12,7 @@ Yes.
 
 > Can I block ads on the reference pages?
 
-Yes. You can pair `sift` with uBO Lite to kill ads.
+Yes. You can pair `sift` with [uBO Lite](https://github.com/uBlockOrigin/uBOL-home) to kill ads.
 
 ### Latency
 
@@ -30,7 +30,7 @@ No. `sift` shows lists in Neovim. You get to leverage Neovim's performance and r
 
 ## References
 
-> Can I use Vimium to navigate within reference windows?
+> Can I use [Vimium](https://github.com/philc/vimium) to navigate within reference windows?
 
 Yes. You can pair `sift` with Vimium to get around.
 
