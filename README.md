@@ -4,6 +4,36 @@
 
 `sift` lets you navigate lists, check references and mark items using only your keyboard.
 
+## Setup
+
+> How do I set up `sift`?
+
+1. Make sure you're using [`lazy.nvim`]().
+
+1. Add this block to your `lazy.nvim` configuration:
+
+```lua
+{
+  "8ta4/sift",
+  opts = {
+    keys = {
+      { "A", function() require("sift").toggle_flagged() end, mode = { "n", "v" } },
+      { "C", function() require("sift").toggle_unmarked() end, mode = { "n", "v" } },
+      { "D", function() require("sift").toggle_done() end, mode = { "n", "v" } },
+      { "X", function() require("sift").toggle_deleted() end, mode = { "n", "v" } },
+      { "a", function() require("sift").mark_flagged() end, mode = { "n", "v" } },
+      { "c", function() require("sift").mark_unmarked() end, mode = { "n", "v" } },
+      { "d", function() require("sift").mark_done() end, mode = { "n", "v" } },
+      { "i", function() require("sift").filter() end, mode = { "n", "v" } },
+      { "s", function() require("sift").open() end, mode = { "n", "v" } },
+      { "x", function() require("sift").mark_deleted() end, mode = { "n", "v" } },
+    },
+    references = {
+      "https://en.wiktionary.org/wiki/%s",
+    },
+  },
+}
+
 ## Usage
 
 ### Navigating
