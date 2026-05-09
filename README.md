@@ -20,7 +20,7 @@ Press `d` in Normal mode or Visual mode. Think "done".
 
 > How do I open references for an item?
 
-Press `s` in Normal mode or Visual mode. Think "see".
+Press `s` in Normal mode or Visual mode. Think "see". In Visual mode, `s` opens the references only for the item under the cursor.
 
 > How do I mark an item to see it again?
 
