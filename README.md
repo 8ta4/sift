@@ -59,7 +59,7 @@ Press `a` in Normal mode or Visual mode. Think "again". Seriously. Think again.
 
 > How do I unmark an item?
 
-Press `c` in Normal mode or Visual mode. Think "clear".
+Press `c` in Normal mode or Visual mode. Think "clear". Clear?
 
 > How do I soft delete an item from the list?
 
