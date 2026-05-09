@@ -16,9 +16,13 @@ Yes. You can pair `sift` with [uBO Lite](https://github.com/uBlockOrigin/uBOL-ho
 
 ### Latency
 
-> What's the latency target?
+> Is there a latency target for opening references?
 
-The goal is under 0.1 seconds.
+No. `sift` hands that off to your browser. So latency depends on external factors like your network and the target website.
+
+> Is there a latency target for filtering?
+
+Yes. The goal is under 0.1 seconds for lists with up to one million items.
 
 [0.1 second is about the limit for having the user feel that the system is reacting instantaneously](https://www.nngroup.com/articles/response-times-3-important-limits/#:~:text=0.1%20second%20is%20about%20the%20limit%20for%20having%20the%20user%20feel%20that%20the%20system%20is%20reacting%20instantaneously).
 
