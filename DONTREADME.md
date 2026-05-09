@@ -30,7 +30,7 @@ Yes. The goal is under 0.1 seconds for lists with up to one million items.
 
 > Can I use dark mode on reference pages?
 
-Yes. You can pair `sift` with [Dark Reader]().
+Yes. You can pair `sift` with [Dark Reader](https://github.com/darkreader/darkreader).
 
 ## Lists
 
