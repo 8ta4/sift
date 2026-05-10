@@ -61,13 +61,21 @@ Press `j` in Normal mode or Visual mode. Default Neovim navigation is left alone
 
 Press `d` in Normal mode or Visual mode. Think "done".
 
+`Space` is often used as a leader key. `a`, `s` and `d` are the only home row keys left that don't have default functions in a read-only buffer. Out of those, `d` is probably the easiest to press. This makes it ideal for what is likely your most frequent marking action.
+
 > How do I open references for an item?
 
-Press `s` in Normal mode or Visual mode. Think "see". See? In Visual mode, `s` opens the references only for the item under the cursor.
+Press `s` in Normal mode or Visual mode. Think "see". See?
+
+In Visual mode, `s` opens the references only for the item under the cursor.
+
+Of the available home row keys `a`, `s` and `d`, `s` is likely the second easiest to type. This makes `s` suitable for what is likely your second most frequent marking action.
 
 > How do I flag an item for a second pass?
 
 Press `a` in Normal mode or Visual mode. Think "again". Seriously. Think again.
+
+Of the available home row keys `a`, `s` and `d`, `a` is likely the hardest to type. This makes `a` suitable for what is likely your third most frequent marking action.
 
 > How do I unmark an item?
 
@@ -77,11 +85,29 @@ Press `c` in Normal mode or Visual mode. Think "clear". Clear?
 
 Press `x` in Normal mode or Visual mode. Think "x out". Since `x` removes a character in Neovim, using `x` here feels natural.
 
+> How do I undo a mark?
+
+Press `u`. This rolls back your last marking action for `d`, `s`, `a`, `c` or `x`.
+
+> How do I redo a mark?
+
+Press `<C-r>`. This reapplies a marking action you undid.
+
 ### Saving
 
 > How do I save?
 
 Press `:w`. That tells `sift` to write your changes to the file.
+
+Manual saving is used so you can:
+
+- Cut down on disk activity.
+
+- Avoid excessive network activity if you're syncing through stuff like Dropbox.
+
+- Fit into the standard Neovim workflow.
+
+Since `sift` doesn't create a swap file, you risk losing your progress if Neovim crashes before you save.
 
 ### Filtering
 
