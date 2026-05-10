@@ -77,6 +77,12 @@ Press `c` in Normal mode or Visual mode. Think "clear". Clear?
 
 Press `x` in Normal mode or Visual mode. Think "x out". Since `x` removes a character in Neovim, using `x` here feels natural.
 
+### Saving
+
+> How do I save?
+
+Press `:w`. That tells `sift` to write your changes to the file.
+
 ### Filtering
 
 > How do I hide items marked as done?
