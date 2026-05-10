@@ -105,6 +105,16 @@ Manual saving is used so you can:
 
 - Fit into the standard Neovim workflow.
 
+For peace of mind, `sift` logs every time you change an item's mark status. If Neovim crashes, `sift` will try to replay that log to restore your work when you reopen your file.
+
+> What directory contains my unsaved data?
+
+`sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
+
+Storing logs here stops your working directory from getting messy. To figure out the exact path on your machine, run:
+
+`:lua print(vim.fn.stdpath("state") .. "/sift/")`
+
 ### Filtering
 
 > How do I hide items marked as done?
