@@ -107,8 +107,6 @@ Manual saving is used so you can:
 
 - Fit into the standard Neovim workflow.
 
-Since `sift` doesn't create a swap file, you risk losing your progress if Neovim crashes before you save.
-
 ### Filtering
 
 > How do I hide items marked as done?
