@@ -101,8 +101,6 @@ Press `:w`. That tells `sift` to write your changes to the file.
 
 Manual saving is used so you can:
 
-- Cut down on disk activity.
-
 - Avoid excessive network activity if you're syncing through stuff like Dropbox.
 
 - Fit into the standard Neovim workflow.
