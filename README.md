@@ -37,6 +37,18 @@
 
 ## Usage
 
+### Creating
+
+> How do I create a list?
+
+1. Copy your items to your clipboard.
+
+1. Run `:Sift <name>` in Neovim.
+
+This drops a `<name>.sift` file into your current directory.
+
+`sift` turns each line in your clipboard into a separate item.
+
 ### Navigating
 
 > How do I navigate to the item below?
