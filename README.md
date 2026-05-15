@@ -8,9 +8,21 @@
 
 > How do I set up `sift`?
 
+1. Make sure you're using a Mac.
+
+1. Install [Homebrew](https://brew.sh/#install).
+
 1. Install [`lazy.nvim`](https://github.com/folke/lazy.nvim).
 
 1. Add this block to your `lazy.nvim` configuration:
+
+1. Open a terminal.
+
+1. Run the following command:
+
+   ```bash
+   brew install chrome-cli
+   ```
 
 ```lua
 {
