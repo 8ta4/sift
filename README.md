@@ -14,8 +14,6 @@
 
 1. Install [`lazy.nvim`](https://github.com/folke/lazy.nvim).
 
-1. Add this block to your `lazy.nvim` configuration:
-
 1. Open a terminal.
 
 1. Run the following command:
@@ -24,28 +22,30 @@
    brew install chrome-cli
    ```
 
-```lua
-{
-  "8ta4/sift",
-  opts = {
-    keys = {
-      { "A", function() require("sift").toggle("flagged") end, mode = { "n", "v" } },
-      { "C", function() require("sift").toggle("unmarked") end, mode = { "n", "v" } },
-      { "D", function() require("sift").toggle("done") end, mode = { "n", "v" } },
-      { "X", function() require("sift").toggle("deleted") end, mode = { "n", "v" } },
-      { "a", function() require("sift").mark("flagged") end, mode = { "n", "v" } },
-      { "c", function() require("sift").mark("unmarked") end, mode = { "n", "v" } },
-      { "d", function() require("sift").mark("done") end, mode = { "n", "v" } },
-      { "i", function() require("sift").filter() end, mode = { "n", "v" } },
-      { "s", function() require("sift").open() end, mode = { "n", "v" } },
-      { "x", function() require("sift").mark("deleted") end, mode = { "n", "v" } },
-    },
-    references = {
-      "https://en.wiktionary.org/wiki/%s",
-    },
-  },
-}
-```
+1. Add this block to your `lazy.nvim` configuration:
+
+   ```lua
+   {
+     "8ta4/sift",
+     opts = {
+       keys = {
+         { "A", function() require("sift").toggle("flagged") end, mode = { "n", "v" } },
+         { "C", function() require("sift").toggle("unmarked") end, mode = { "n", "v" } },
+         { "D", function() require("sift").toggle("done") end, mode = { "n", "v" } },
+         { "X", function() require("sift").toggle("deleted") end, mode = { "n", "v" } },
+         { "a", function() require("sift").mark("flagged") end, mode = { "n", "v" } },
+         { "c", function() require("sift").mark("unmarked") end, mode = { "n", "v" } },
+         { "d", function() require("sift").mark("done") end, mode = { "n", "v" } },
+         { "i", function() require("sift").filter() end, mode = { "n", "v" } },
+         { "s", function() require("sift").open() end, mode = { "n", "v" } },
+         { "x", function() require("sift").mark("deleted") end, mode = { "n", "v" } },
+       },
+       references = {
+         "https://en.wiktionary.org/wiki/%s",
+       },
+     },
+   }
+   ```
 
 ## Usage
 
