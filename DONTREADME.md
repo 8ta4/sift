@@ -52,10 +52,28 @@ No. The item remains visible for the following reasons:
 
 Yes. You can pair `sift` with Vimium to get around.
 
-> Can `sift` reuse tabs for references?
+> Does `sift` open multiple references in the same window?
 
-Yes. If a tab for that target is already open, `sift` reuses it.
+No. `sift` gives each reference source its own window. That way, you can glance at multiple references at once.
 
-> If a tab is not open, does `sift` open the reference in a separate window?
+> If I close the `sift` window and hit `s`, will `sift` open a new one?
 
-Yes. `sift` opens the new tab in a separate window so you can view multiple references simultaneously. You can use your window manager to tile the windows.
+Yes.
+
+> If you press `s` while the window opened by `sift` is still open, will `sift` open a new window?
+
+No. This will stop the windows count from getting out of hand.
+
+> If you press `s` while the window opened by `sift` is still open, which tab of that window does `sift` use to open a reference?
+
+`sift` uses whichever tab is active in that window.
+
+Changing tabs could look jarring.
+
+> Can `sift` close tabs?
+
+Yes. If you press `s` when you have a bunch of tabs open in a window that `sift` has opened, `sift` will open a reference in the active tab and close the other tabs in the window.
+
+When you manually open one additional tab in the same window, you can press `⌘ + Shift + [` to navigate to the reference tab. Even when you have a bunch of extra tabs open in the same window, you can still press `⌘ + 1` to go to the reference tab.
+
+Even if you accidentally hit `s` and closed some tabs, you can try reopening them by pressing `⌘ + Shift + T`.
