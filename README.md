@@ -67,27 +67,27 @@ This drops a `<name>.sift` file into your current directory.
 
 Press `j` in Normal mode or Visual mode. Default Neovim navigation is left alone since `sift` only hijacks keys that have no default function in a read-only buffer.
 
-### Marking
-
-> How do I mark an item as done?
-
-Press `d` in Normal mode or Visual mode. Think "done".
-
-`Space` is often used as a leader key. `a`, `s` and `d` are the only home row keys left that don't have default functions in a read-only buffer. Out of those, `d` is probably the easiest to press. This makes it ideal for what is likely your most frequent marking action.
-
 > How do I open references for an item?
 
 Press `s` in Normal mode or Visual mode. Think "see". See?
 
 In Visual mode, `s` opens the references only for the item under the cursor.
 
-Of the available home row keys `a`, `s` and `d`, `s` is likely the second easiest to type. This makes `s` suitable for what is likely your second most frequent marking action.
+`Space` is often used as a leader key. `a`, `s` and `d` are the only home row keys left that don't have default functions in a read-only buffer. Out of those, `s` is likely the second easiest to type.
+
+### Marking
+
+> How do I mark an item as done?
+
+Press `d` in Normal mode or Visual mode. Think "done".
+
+Of the available home row keys `a`, `s` and `d`, `d` is probably the easiest to press. This makes it ideal for what is likely your most frequent marking action.
 
 > How do I flag an item for a second pass?
 
 Press `a` in Normal mode or Visual mode. Think "again". Seriously. Think again.
 
-Of the available home row keys `a`, `s` and `d`, `a` is likely the hardest to type. This makes `a` suitable for what is likely your third most frequent marking action.
+Of the available home row keys `a`, `s` and `d`, `a` is likely the hardest to type.
 
 > How do I unmark an item?
 
