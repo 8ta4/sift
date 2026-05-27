@@ -129,13 +129,9 @@ Storing logs here stops your working directory from getting messy. To figure out
 
 ### Filtering
 
-> How do I hide items marked as done?
+> How do I toggle the visibility of items marked as done?
 
-Press `D` in Normal mode or Visual mode. The uppercase keys `A`, `X` and `C` follow this same pattern to hide their respective marks.
-
-> How do I toggle the filter to stop excluding items marked as done?
-
-Press `D` in Normal mode or Visual mode. The uppercase keys `A`, `X` and `C` follow this same pattern to toggle their respective exclusions.
+Press `D` in Normal mode or Visual mode. You can use the uppercase keys `A`, `X`, and `C` the same way to flip the visibility of the items marked with each one.
 
 > How do I filter the list by regex?
 
