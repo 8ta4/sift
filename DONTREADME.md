@@ -76,4 +76,4 @@ Yes. If you press `s` when you have a bunch of tabs open in a window that `sift`
 
 When you manually open one additional tab in the same window, you can press `⌘ + Shift + [` to navigate to the reference tab. Even when you have a bunch of extra tabs open in the same window, you can still press `⌘ + 1` to go to the reference tab.
 
-Even if you accidentally hit `s` and closed some tabs, you can try reopening them by pressing `⌘ + Shift + T`.
+Even if you accidentally hit `s` and closed some tabs, you can try reopening them by pressing `⌘ + Shift + t`.
