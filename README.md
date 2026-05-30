@@ -101,11 +101,11 @@ Press `x` while the cursor is on the item. Think "x out". Since `x` removes a ch
 
 > How do I undo a mark?
 
-Press `u` in Normal or Visual mode. This rolls back your last marking action for `d`, `s`, `a`, `c` or `x`.
+Press `u` in Normal or Visual mode inside the list window. This rolls back your last marking action for `d`, `s`, `a`, `c` or `x`.
 
 > How do I redo a mark?
 
-Press `<C-r>` in Normal or Visual mode. This reapplies a marking action you undid.
+Press `<C-r>` in Normal or Visual mode inside the list window. This reapplies a marking action you undid.
 
 > Can I mark several items as done with a single keystroke?
 
@@ -137,7 +137,7 @@ Storing logs here stops your working directory from getting messy. To figure out
 
 > How do I toggle the visibility of items marked as done?
 
-Press `D` in Normal or Visual mode. You can use the uppercase keys `A`, `X` and `C` the same way to flip the visibility of the items marked with each one.
+Press `D` in Normal or Visual mode inside the list window. You can use the uppercase keys `A`, `X` and `C` the same way to flip the visibility of the items marked with each one.
 
 > How do I filter the list by regex?
 
