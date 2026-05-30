@@ -98,6 +98,10 @@ Yes. `sift` will grab the most recent valid regex from the filter window and use
 
 Yes. Displaying an empty list might look pointless. But some items become visible when you press `D` or other keys. So, an empty list might actually be useful.
 
+> Is the filter window a floating one or a split one?
+
+The filter window is a split one. A split window lets you quickly hop between the filter window and the list window using Neovim's usual navigation commands.
+
 > Does opening the filter window clear the regex filter I'm using?
 
 No. The filter window comes preloaded with the active regex.
