@@ -29,6 +29,7 @@
      "8ta4/sift",
      opts = {
        keys = {
+         { "<C-r>", function() require("sift").redo() end, mode = { "n", "v" } },
          { "A", function() require("sift").toggle("flagged") end, mode = { "n", "v" } },
          { "C", function() require("sift").toggle("unmarked") end, mode = { "n", "v" } },
          { "D", function() require("sift").toggle("done") end, mode = { "n", "v" } },
@@ -38,6 +39,7 @@
          { "d", function() require("sift").mark("done") end, mode = { "n", "v" } },
          { "i", function() require("sift").filter() end, mode = { "n", "v" } },
          { "s", function() require("sift").open() end, mode = { "n", "v" } },
+         { "u", function() require("sift").undo() end, mode = { "n", "v" } },
          { "x", function() require("sift").mark("deleted") end, mode = { "n", "v" } },
        },
        references = {
@@ -99,11 +101,11 @@ Press `x` in Normal mode or Visual mode. Think "x out". Since `x` removes a char
 
 > How do I undo a mark?
 
-Press `u`. This rolls back your last marking action for `d`, `s`, `a`, `c` or `x`.
+Press `u` in Normal mode or Visual mode. This rolls back your last marking action for `d`, `s`, `a`, `c` or `x`.
 
 > How do I redo a mark?
 
-Press `<C-r>`. This reapplies a marking action you undid.
+Press `<C-r>` in Normal mode or Visual mode. This reapplies a marking action you undid.
 
 ### Saving
 
