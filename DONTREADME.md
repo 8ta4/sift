@@ -88,7 +88,7 @@ No. The item remains visible for the following reasons:
 
 - Suppose you've also pressed `X` to hide deleted items and you mean to press `d` but accidentally hit `x`. If the item disappeared without distinct feedback, you'd lack clear confirmation of whether it was marked done or deleted.
 
-### Filtering
+## Filtering
 
 > If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
 
