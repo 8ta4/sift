@@ -107,6 +107,10 @@ Press `u` in Normal mode or Visual mode. This rolls back your last marking actio
 
 Press `<C-r>` in Normal mode or Visual mode. This reapplies a marking action you undid.
 
+> Can I mark several items as done with a single keystroke?
+
+Yes. If your visual selection covers several items, hitting `d` will mark them as done. `a`, `c` and `x` work similarly.
+
 ### Saving
 
 > How do I save?
