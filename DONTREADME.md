@@ -97,3 +97,7 @@ Yes. `sift` will grab the most recent valid regex from the filter window and use
 > If the filter window's regex matches nothing, does the list window show an empty list?
 
 Yes. Displaying an empty list might look pointless. But some items become visible when you press `D` or other keys. So, an empty list might actually be useful.
+
+> Does opening the filter window clear the regex filter I'm using?
+
+No. The filter window comes preloaded with the active regex.
