@@ -111,7 +111,7 @@ Press `<C-r>` in Normal mode or Visual mode. This reapplies a marking action you
 
 > How do I save?
 
-Press `:w`. That tells `sift` to write your changes to the file.
+Press `:w` in Normal mode. That tells `sift` to write your changes to the file.
 
 Manual saving is used so you can:
 
