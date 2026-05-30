@@ -87,3 +87,13 @@ No. The item remains visible for the following reasons:
 - If an item disappeared and caused the items below it to move up, the sudden layout shift would be jarring.
 
 - Suppose you've also pressed `X` to hide deleted items and you mean to press `d` but accidentally hit `x`. If the item disappeared without distinct feedback, you'd lack clear confirmation of whether it was marked done or deleted.
+
+### Filtering
+
+> If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
+
+Yes. `sift` will grab the most recent valid regex from the filter window and use it to filter the list.
+
+> If the filter window's regex matches nothing, does the list window show an empty list?
+
+Yes. Displaying an empty list might look pointless. But some items become visible when you press `D` or other keys. So, an empty list might actually be useful.

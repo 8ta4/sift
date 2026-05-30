@@ -133,12 +133,32 @@ Drop your regex into the filter window.
 
 Press `i` in Normal or Visual mode. Think "input". This plays into your muscle memory for typing after you press `i` to enter Insert mode.
 
+> If I hit `i` to bring up the filter window, which mode am I in?
+
+You're in Insert mode.
+
+> How do I get back to the list window while keeping the current regex filter applied?
+
+Press `<Enter>`.
+
+> How do I switch from Insert to Normal mode in the filter window?
+
+Tap `<Esc>`.
+
+> If I hit `<Esc>` while in Normal mode in the filter window, will I stay in the filter window?
+
+No. You'll be back at the list window.
+
+> Do I need to hit `<Esc>` twice to get back to the list window from Insert mode in the filter window?
+
+No. You can hit `<C-c>` to jump straight to the list window.
+
+> Can pressing `<C-c>` keep the regex filter applied?
+
+Yes. If you've hit `<Enter>` in the filter window at any point since you started Neovim, the regex filter will go back to the state it had back then.
+
 > If the filter window is empty, does `sift` apply an empty regex?
 
 No. An empty string is treated as having no regex filter.
 
 In theory, an empty regex only matches an empty item, which doesn't exist when `sift` builds the list.
-
-> How do I get back to the list window while keeping the current regex filter applied?
-
-Press `<Enter>`.
