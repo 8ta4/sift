@@ -32,21 +32,21 @@ Yes. The goal is under 0.1 seconds for lists with up to one million items.
 
 Yes. You can pair `sift` with [Dark Reader](https://github.com/darkreader/darkreader).
 
-## Lists
+## Creating
+
+> Will `sift` convert an empty line from your clipboard into an item?
+
+No.
+
+> Can `sift` remove duplicate items?
+
+Yes. `sift` trims each line's string and removes duplicates while building a list.
+
+## Navigating
 
 > Does `sift` show lists in a browser?
 
 No. `sift` shows lists in Neovim. You get to leverage Neovim's performance and reuse your configuration.
-
-> If I've pressed `D` to hide done items, does marking an item as done make it disappear?
-
-No. The item remains visible for the following reasons:
-
-- If an item disappeared and caused the items below it to move up, the sudden layout shift would be jarring.
-
-- Suppose you've also pressed `X` to hide deleted items and you mean to press `d` but accidentally hit `x`. If the item disappeared without distinct feedback, you'd lack clear confirmation of whether it was marked done or deleted.
-
-## References
 
 > Can I use [Vimium](https://github.com/philc/vimium) to navigate within reference windows?
 
@@ -77,3 +77,13 @@ Yes. If you press `s` when you have a bunch of tabs open in a window that `sift`
 When you manually open one additional tab in the same window, you can press `⌘ + Shift + [` to navigate to the reference tab. Even when you have a bunch of extra tabs open in the same window, you can still press `⌘ + 1` to go to the reference tab.
 
 Even if you accidentally hit `s` and closed some tabs, you can try reopening them by pressing `⌘ + Shift + t`.
+
+## Marking
+
+> If I've pressed `D` to hide done items, does marking an item as done make it disappear?
+
+No. The item remains visible for the following reasons:
+
+- If an item disappeared and caused the items below it to move up, the sudden layout shift would be jarring.
+
+- Suppose you've also pressed `X` to hide deleted items and you mean to press `d` but accidentally hit `x`. If the item disappeared without distinct feedback, you'd lack clear confirmation of whether it was marked done or deleted.

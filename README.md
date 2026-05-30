@@ -63,14 +63,6 @@ This drops a `<name>.sift` file into your current directory.
 
 `sift` treats every line in your clipboard like a possible item.
 
-> Will `sift` convert an empty line from your clipboard into an item?
-
-No.
-
-> Can `sift` remove duplicate items?
-
-Yes. `sift` trims each line's string and removes duplicates while building a list.
-
 ### Navigating
 
 > How do I navigate to the item below?
