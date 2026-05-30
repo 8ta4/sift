@@ -137,4 +137,4 @@ Press `D` in Normal mode or Visual mode. You can use the uppercase keys `A`, `X`
 
 > How do I filter the list by regex?
 
-Press `i` in Normal mode or Visual mode, and type your regex. Think "input". This plays into your muscle memory for typing after you press `i` to enter Insert mode.
+Press `i` in Normal mode or Visual mode and type your regex. Think "input". This plays into your muscle memory for typing after you press `i` to enter Insert mode.
