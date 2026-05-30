@@ -79,25 +79,25 @@ In Visual mode, `s` opens the references only for the item under the cursor.
 
 ### Marking
 
-> How do I mark an item as done?
+> In Normal mode, how do I mark an item as done?
 
-Press `d` in Normal mode or Visual mode. Think "done".
+Press `d` while the cursor is on the item. Think "done".
 
 Of the available home row keys `a`, `s` and `d`, `d` is probably the easiest to press. This makes it ideal for what is likely your most frequent marking action.
 
-> How do I flag an item for a second pass?
+> In Normal mode, how do I flag an item for a second pass?
 
-Press `a` in Normal mode or Visual mode. Think "again". Seriously. Think again.
+Press `a` while the cursor is on the item. Think "again". Seriously. Think again.
 
 Of the available home row keys `a`, `s` and `d`, `a` is likely the hardest to type.
 
-> How do I unmark an item?
+> In Normal mode, how do I unmark an item?
 
-Press `c` in Normal mode or Visual mode. Think "clear". Clear?
+Press `c` while the cursor is on the item. Think "clear". Clear?
 
-> How do I soft delete an item from the list?
+> In Normal mode, how do I soft delete an item from the list?
 
-Press `x` in Normal mode or Visual mode. Think "x out". Since `x` removes a character in Neovim, using `x` here feels natural.
+Press `x` while the cursor is on the item. Think "x out". Since `x` removes a character in Neovim, using `x` here feels natural.
 
 > How do I undo a mark?
 
