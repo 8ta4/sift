@@ -137,7 +137,7 @@ Storing logs here stops your working directory from getting messy. To figure out
 
 > How do I toggle the visibility of items marked as done?
 
-Press `D` in Normal mode or Visual mode. You can use the uppercase keys `A`, `X`, and `C` the same way to flip the visibility of the items marked with each one.
+Press `D` in Normal mode or Visual mode. You can use the uppercase keys `A`, `X` and `C` the same way to flip the visibility of the items marked with each one.
 
 > How do I filter the list by regex?
 
