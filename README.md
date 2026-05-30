@@ -61,7 +61,15 @@
 
 This drops a `<name>.sift` file into your current directory.
 
-`sift` turns each line in your clipboard into a separate item.
+`sift` treats every line in your clipboard like a possible item.
+
+> Will `sift` convert an empty line from your clipboard into an item?
+
+No.
+
+> Can `sift` remove duplicate items?
+
+Yes. `sift` trims each line's string and removes duplicates while building a list.
 
 ### Navigating
 
@@ -137,4 +145,18 @@ Press `D` in Normal mode or Visual mode. You can use the uppercase keys `A`, `X`
 
 > How do I filter the list by regex?
 
-Press `i` in Normal mode or Visual mode and type your regex. Think "input". This plays into your muscle memory for typing after you press `i` to enter Insert mode.
+Drop your regex into the filter window.
+
+> How do I open the filter window from the list window?
+
+Press `i` in Normal mode or Visual mode. Think "input". This plays into your muscle memory for typing after you press `i` to enter Insert mode.
+
+> If the filter window is empty, does `sift` apply an empty regex?
+
+No. An empty string is treated as having no regex filter.
+
+In theory, an empty regex only matches an empty item, which doesn't exist when `sift` builds the list.
+
+> How do I get back to the list window while keeping the current regex filter applied?
+
+Press `<Enter>`.
