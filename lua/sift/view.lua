@@ -14,6 +14,8 @@ local statuses = {
   deleted = true,
 }
 
+local item_text_start_col = 4
+
 local function set_modifiable(bufnr, value)
   if vim.api.nvim_buf_is_valid(bufnr) then
     vim.bo[bufnr].modifiable = value
@@ -43,6 +45,29 @@ local function is_visible(state, item)
   return regex_matches(state.regex, item.text)
 end
 
+local function ensure_onemore_virtualedit()
+  local current = vim.wo.virtualedit
+  for value in current:gmatch("[^,]+") do
+    if value == "all" or value == "onemore" then
+      return
+    end
+  end
+
+  if current == "" or current == "none" then
+    vim.wo.virtualedit = "onemore"
+  else
+    vim.wo.virtualedit = current .. ",onemore"
+  end
+end
+
+local function restored_cursor_col(line, previous_col)
+  if previous_col < item_text_start_col or previous_col > #line then
+    return item_text_start_col
+  end
+
+  return previous_col
+end
+
 function M.recompute(state)
   state.visible = {}
   state.row_to_item = {}
@@ -59,6 +84,11 @@ function M.render(bufnr, modified)
   local state = states[bufnr]
   if not state then
     return
+  end
+
+  local cursor = nil
+  if vim.api.nvim_get_current_buf() == bufnr then
+    cursor = vim.api.nvim_win_get_cursor(0)
   end
 
   M.recompute(state)
@@ -79,9 +109,11 @@ function M.render(bufnr, modified)
     set_modified(bufnr, current_modified)
   end
 
-  if vim.api.nvim_get_current_buf() == bufnr and #lines > 0 then
-    local row = math.min(vim.api.nvim_win_get_cursor(0)[1], #lines)
-    vim.api.nvim_win_set_cursor(0, { math.max(row, 1), 0 })
+  if cursor and #lines > 0 then
+    local row = math.min(cursor[1], #lines)
+    row = math.max(row, 1)
+    ensure_onemore_virtualedit()
+    vim.api.nvim_win_set_cursor(0, { row, restored_cursor_col(lines[row], cursor[2]) })
   end
 end
 

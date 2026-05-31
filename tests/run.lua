@@ -33,6 +33,18 @@ local function press(keys)
   vim.api.nvim_feedkeys(encoded, "x", false)
 end
 
+local function cursor()
+  return vim.api.nvim_win_get_cursor(0)
+end
+
+local function set_cursor(row, col)
+  vim.api.nvim_win_set_cursor(0, { row, col })
+end
+
+local function ok_item_text_col(message)
+  ok(cursor()[2] >= 4, message or "cursor should stay on item text")
+end
+
 local function reset_modules()
   for name in pairs(package.loaded) do
     if name == "sift" or name:match("^sift%.") then
@@ -172,6 +184,74 @@ tests.marking_undo_redo_and_recovery = function()
   vim.cmd.write()
   local log_path = require("sift.recovery").log_path(path, require("sift.config").get())
   eq(vim.fn.filereadable(log_path), 0, "save should clear recovery log")
+end
+
+tests.mark_keys_preserve_item_text_cursor = function()
+  setup("mark_cursor")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha" })
+  vim.cmd.edit(path)
+
+  for _, key in ipairs({ "d", "a", "c", "x" }) do
+    set_cursor(1, 6)
+    press(key)
+    eq(cursor(), { 1, 6 }, key .. " should preserve the cursor column")
+    ok_item_text_col(key .. " should not leave cursor in the status prefix")
+  end
+end
+
+tests.undo_redo_preserve_item_text_cursor = function()
+  setup("undo_redo_cursor")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha" })
+  vim.cmd.edit(path)
+
+  set_cursor(1, 6)
+  press("d")
+  press("u")
+  eq(cursor(), { 1, 6 }, "undo should preserve the cursor column")
+  ok_item_text_col("undo should not leave cursor in the status prefix")
+
+  press("<C-r>")
+  eq(cursor(), { 1, 6 }, "redo should preserve the cursor column")
+  ok_item_text_col("redo should not leave cursor in the status prefix")
+end
+
+tests.status_toggles_keep_or_clamp_item_text_cursor = function()
+  setup("status_toggle_cursor")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha", "[D] beta-gamma" })
+  vim.cmd.edit(path)
+
+  set_cursor(1, 6)
+  press("D")
+  eq(lines(), { "[ ] alpha" })
+  eq(cursor(), { 1, 6 }, "status toggle should keep a valid cursor column")
+  ok_item_text_col("status toggle should not leave cursor in the status prefix")
+
+  press("D")
+  set_cursor(2, 10)
+  press("D")
+  eq(lines(), { "[ ] alpha" })
+  eq(cursor(), { 1, 4 }, "status toggle should clamp an invalid cursor column to item text")
+  ok_item_text_col("clamped status toggle cursor should stay out of the prefix")
+end
+
+tests.empty_or_short_item_text_cursor = function()
+  setup("short_cursor")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] ", "[ ] a" })
+  vim.cmd.edit(path)
+
+  set_cursor(1, 4)
+  press("d")
+  eq(lines()[1], "[D] ")
+  ok_item_text_col("empty item text should keep cursor at item text start")
+
+  set_cursor(2, 5)
+  press("x")
+  eq(lines()[2], "[X] a")
+  ok_item_text_col("short item text should keep cursor at or after item text start")
 end
 
 tests.visual_marking = function()
