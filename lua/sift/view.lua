@@ -6,6 +6,8 @@ local browser = require("sift.browser")
 local M = {}
 
 local states = {}
+local item_text_column = 4
+local virtualedit_var = "sift_previous_virtualedit"
 
 local statuses = {
   unmarked = true,
@@ -13,8 +15,6 @@ local statuses = {
   done = true,
   deleted = true,
 }
-
-local item_text_start_col = 4
 
 local function set_modifiable(bufnr, value)
   if vim.api.nvim_buf_is_valid(bufnr) then
@@ -25,6 +25,65 @@ end
 local function set_modified(bufnr, value)
   if vim.api.nvim_buf_is_valid(bufnr) then
     vim.bo[bufnr].modified = value
+  end
+end
+
+local function windows_for_buffer(bufnr)
+  local wins = {}
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_buf(win) == bufnr then
+      table.insert(wins, win)
+    end
+  end
+  return wins
+end
+
+local function has_virtualedit(value, name)
+  for part in tostring(value or ""):gmatch("[^,]+") do
+    if part == name then
+      return true
+    end
+  end
+  return false
+end
+
+local function add_virtualedit_onemore(win)
+  local value = vim.wo[win].virtualedit
+  if has_virtualedit(value, "all") or has_virtualedit(value, "onemore") then
+    return
+  end
+
+  local has_previous = pcall(vim.api.nvim_win_get_var, win, virtualedit_var)
+  if not has_previous then
+    vim.api.nvim_win_set_var(win, virtualedit_var, value)
+  end
+
+  if value == "" then
+    vim.wo[win].virtualedit = "onemore"
+  else
+    vim.wo[win].virtualedit = value .. ",onemore"
+  end
+end
+
+local function restore_virtualedit(win)
+  if not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+
+  local ok, value = pcall(vim.api.nvim_win_get_var, win, virtualedit_var)
+  if not ok then
+    return
+  end
+
+  vim.wo[win].virtualedit = value
+  pcall(vim.api.nvim_win_del_var, win, virtualedit_var)
+end
+
+local function sync_virtualedit_for_line(win, line)
+  if #line <= item_text_column then
+    add_virtualedit_onemore(win)
+  else
+    restore_virtualedit(win)
   end
 end
 
@@ -45,24 +104,9 @@ local function is_visible(state, item)
   return regex_matches(state.regex, item.text)
 end
 
-local function ensure_onemore_virtualedit()
-  local current = vim.wo.virtualedit
-  for value in current:gmatch("[^,]+") do
-    if value == "all" or value == "onemore" then
-      return
-    end
-  end
-
-  if current == "" or current == "none" then
-    vim.wo.virtualedit = "onemore"
-  else
-    vim.wo.virtualedit = current .. ",onemore"
-  end
-end
-
 local function restored_cursor_col(line, previous_col)
-  if previous_col < item_text_start_col or previous_col > #line then
-    return item_text_start_col
+  if previous_col < item_text_column or previous_col > #line then
+    return item_text_column
   end
 
   return previous_col
@@ -80,15 +124,55 @@ function M.recompute(state)
   end
 end
 
+function M.clamp_cursor(bufnr, win, opts)
+  bufnr = bufnr or vim.api.nvim_get_current_buf()
+  win = win or vim.api.nvim_get_current_win()
+  opts = opts or {}
+
+  if not vim.api.nvim_buf_is_valid(bufnr) or not vim.api.nvim_win_is_valid(win) then
+    return
+  end
+  if vim.api.nvim_win_get_buf(win) ~= bufnr then
+    return
+  end
+
+  local state = states[bufnr]
+  if not state or #state.visible == 0 then
+    restore_virtualedit(win)
+    return
+  end
+
+  local cursor = vim.api.nvim_win_get_cursor(win)
+  local row = math.min(math.max(opts.row or cursor[1], 1), #state.visible)
+  local line = vim.api.nvim_buf_get_lines(bufnr, row - 1, row, false)[1]
+  if not line then
+    restore_virtualedit(win)
+    return
+  end
+
+  sync_virtualedit_for_line(win, line)
+
+  local col = restored_cursor_col(line, opts.column or cursor[2])
+  if row ~= cursor[1] or col ~= cursor[2] then
+    pcall(vim.api.nvim_win_set_cursor, win, { row, col })
+  end
+end
+
+local function clamp_buffer_cursors(bufnr, opts)
+  for _, win in ipairs(windows_for_buffer(bufnr)) do
+    M.clamp_cursor(bufnr, win, opts)
+  end
+end
+
 function M.render(bufnr, modified)
   local state = states[bufnr]
   if not state then
     return
   end
 
-  local cursor = nil
-  if vim.api.nvim_get_current_buf() == bufnr then
-    cursor = vim.api.nvim_win_get_cursor(0)
+  local window_cursors = {}
+  for _, win in ipairs(windows_for_buffer(bufnr)) do
+    window_cursors[win] = vim.api.nvim_win_get_cursor(win)
   end
 
   M.recompute(state)
@@ -109,11 +193,12 @@ function M.render(bufnr, modified)
     set_modified(bufnr, current_modified)
   end
 
-  if cursor and #lines > 0 then
-    local row = math.min(cursor[1], #lines)
-    row = math.max(row, 1)
-    ensure_onemore_virtualedit()
-    vim.api.nvim_win_set_cursor(0, { row, restored_cursor_col(lines[row], cursor[2]) })
+  for _, win in ipairs(windows_for_buffer(bufnr)) do
+    local cursor = window_cursors[win]
+    M.clamp_cursor(bufnr, win, {
+      row = cursor and cursor[1],
+      column = cursor and cursor[2],
+    })
   end
 end
 
@@ -291,12 +376,7 @@ function M.open_references_visual()
 end
 
 local function find_window_for_buffer(bufnr)
-  for _, win in ipairs(vim.api.nvim_list_wins()) do
-    if vim.api.nvim_win_get_buf(win) == bufnr then
-      return win
-    end
-  end
-  return nil
+  return windows_for_buffer(bufnr)[1]
 end
 
 local function filter_text(filter_bufnr)
@@ -380,8 +460,27 @@ local function set_keymap(bufnr, mode, lhs, rhs, desc)
   })
 end
 
+local function set_cursor_motion_keymaps(bufnr)
+  set_keymap(bufnr, "n", "0", function()
+    vim.cmd("normal! 0")
+    require("sift.view").clamp_cursor(bufnr)
+  end, "sift: move to item text")
+
+  set_keymap(bufnr, "n", "h", function()
+    local count = vim.v.count
+    if count > 0 then
+      vim.cmd("normal! " .. count .. "h")
+    else
+      vim.cmd("normal! h")
+    end
+    require("sift.view").clamp_cursor(bufnr)
+  end, "sift: move left")
+end
+
 function M.set_keymaps(bufnr)
   local keys = config.get().keymaps
+
+  set_cursor_motion_keymaps(bufnr)
 
   set_keymap(bufnr, { "n", "x" }, keys.open_references, function()
     if vim.fn.mode():match("[vV\22]") then
@@ -444,6 +543,28 @@ function M.set_keymaps(bufnr)
   end, "sift: open filter")
 end
 
+local function install_cursor_clamp(bufnr)
+  local group = vim.api.nvim_create_augroup("sift_cursor_" .. bufnr, { clear = true })
+
+  vim.api.nvim_create_autocmd({ "BufEnter", "BufWinEnter", "CursorMoved", "CursorMovedI" }, {
+    group = group,
+    buffer = bufnr,
+    callback = function(args)
+      require("sift.view").clamp_cursor(args.buf)
+    end,
+  })
+
+  vim.api.nvim_create_autocmd({ "BufLeave", "BufWinLeave" }, {
+    group = group,
+    buffer = bufnr,
+    callback = function()
+      restore_virtualedit(vim.api.nvim_get_current_win())
+    end,
+  })
+
+  return group
+end
+
 function M.attach(bufnr)
   bufnr = bufnr or vim.api.nvim_get_current_buf()
   if states[bufnr] then
@@ -471,6 +592,7 @@ function M.attach(bufnr)
     regex = nil,
     undo_stack = {},
     redo_stack = {},
+    cursor_augroup = nil,
   }
 
   states[bufnr] = state
@@ -479,6 +601,7 @@ function M.attach(bufnr)
   vim.bo[bufnr].swapfile = false
   vim.b[bufnr].sift_attached = true
   M.set_keymaps(bufnr)
+  state.cursor_augroup = install_cursor_clamp(bufnr)
   M.render(bufnr, replayed > 0)
 
   return state
@@ -512,6 +635,13 @@ function M.write(bufnr)
 end
 
 function M.detach(bufnr)
+  local state = states[bufnr]
+  if state and state.cursor_augroup then
+    pcall(vim.api.nvim_del_augroup_by_id, state.cursor_augroup)
+  end
+  for _, win in ipairs(windows_for_buffer(bufnr)) do
+    restore_virtualedit(win)
+  end
   states[bufnr] = nil
 end
 
