@@ -28,9 +28,25 @@ local function lines(bufnr)
   return vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 end
 
+local function cursor_col()
+  return vim.api.nvim_win_get_cursor(0)[2]
+end
+
 local function press(keys)
   local encoded = vim.api.nvim_replace_termcodes(keys, true, false, true)
   vim.api.nvim_feedkeys(encoded, "x", false)
+end
+
+local function cursor()
+  return vim.api.nvim_win_get_cursor(0)
+end
+
+local function set_cursor(row, col)
+  vim.api.nvim_win_set_cursor(0, { row, col })
+end
+
+local function ok_item_text_col(message)
+  ok(cursor()[2] >= 4, message or "cursor should stay on item text")
 end
 
 local function reset_modules()
@@ -60,6 +76,26 @@ end
 
 local function read(path)
   return vim.fn.readfile(path)
+end
+
+local function capture_notify(fn)
+  local original_notify = vim.notify
+  local notifications = {}
+  vim.notify = function(message, level, opts)
+    table.insert(notifications, {
+      message = message,
+      level = level,
+      opts = opts,
+    })
+  end
+  local success, err = xpcall(function()
+    fn(notifications)
+  end, debug.traceback)
+  vim.notify = original_notify
+  if not success then
+    error(err, 0)
+  end
+  return notifications
 end
 
 local tests = {}
@@ -149,6 +185,64 @@ tests.save_normalizes_existing_files = function()
   eq(vim.bo.modified, false)
 end
 
+tests.cursor_opens_at_item_text_column = function()
+  setup("cursor_open")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha" })
+
+  vim.cmd.edit(path)
+
+  eq(cursor_col(), 4)
+end
+
+tests.cursor_zero_clamps_to_item_text_column = function()
+  setup("cursor_zero")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[D] alpha" })
+
+  vim.cmd.edit(path)
+  vim.api.nvim_win_set_cursor(0, { 1, 7 })
+  press("0")
+
+  eq(cursor_col(), 4)
+end
+
+tests.cursor_render_preserves_valid_item_text_column = function()
+  setup("cursor_render")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha" })
+
+  vim.cmd.edit(path)
+  vim.api.nvim_win_set_cursor(0, { 1, 7 })
+  press("d")
+
+  eq(lines(), { "[D] alpha" })
+  eq(cursor_col(), 7)
+end
+
+tests.cursor_h_clamps_to_item_text_column = function()
+  setup("cursor_h")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[A] alpha" })
+
+  vim.cmd.edit(path)
+  eq(cursor_col(), 4)
+  press("h")
+
+  eq(cursor_col(), 4)
+end
+
+tests.cursor_empty_item_text_does_not_error = function()
+  setup("cursor_empty_item")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] " })
+
+  vim.cmd.edit(path)
+  press("0")
+
+  eq(cursor_col(), 4)
+end
+
 tests.marking_undo_redo_and_recovery = function()
   local dir = setup("marking")
   local path = dir .. "/items.sift"
@@ -172,6 +266,74 @@ tests.marking_undo_redo_and_recovery = function()
   vim.cmd.write()
   local log_path = require("sift.recovery").log_path(path, require("sift.config").get())
   eq(vim.fn.filereadable(log_path), 0, "save should clear recovery log")
+end
+
+tests.mark_keys_preserve_item_text_cursor = function()
+  setup("mark_cursor")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha" })
+  vim.cmd.edit(path)
+
+  for _, key in ipairs({ "d", "a", "c", "x" }) do
+    set_cursor(1, 6)
+    press(key)
+    eq(cursor(), { 1, 6 }, key .. " should preserve the cursor column")
+    ok_item_text_col(key .. " should not leave cursor in the status prefix")
+  end
+end
+
+tests.undo_redo_preserve_item_text_cursor = function()
+  setup("undo_redo_cursor")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha" })
+  vim.cmd.edit(path)
+
+  set_cursor(1, 6)
+  press("d")
+  press("u")
+  eq(cursor(), { 1, 6 }, "undo should preserve the cursor column")
+  ok_item_text_col("undo should not leave cursor in the status prefix")
+
+  press("<C-r>")
+  eq(cursor(), { 1, 6 }, "redo should preserve the cursor column")
+  ok_item_text_col("redo should not leave cursor in the status prefix")
+end
+
+tests.status_toggles_keep_or_clamp_item_text_cursor = function()
+  setup("status_toggle_cursor")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha", "[D] beta-gamma" })
+  vim.cmd.edit(path)
+
+  set_cursor(1, 6)
+  press("D")
+  eq(lines(), { "[ ] alpha" })
+  eq(cursor(), { 1, 6 }, "status toggle should keep a valid cursor column")
+  ok_item_text_col("status toggle should not leave cursor in the status prefix")
+
+  press("D")
+  set_cursor(2, 10)
+  press("D")
+  eq(lines(), { "[ ] alpha" })
+  eq(cursor(), { 1, 4 }, "status toggle should clamp an invalid cursor column to item text")
+  ok_item_text_col("clamped status toggle cursor should stay out of the prefix")
+end
+
+tests.empty_or_short_item_text_cursor = function()
+  setup("short_cursor")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] ", "[ ] a" })
+  vim.cmd.edit(path)
+
+  set_cursor(1, 4)
+  press("d")
+  eq(lines()[1], "[D] ")
+  ok_item_text_col("empty item text should keep cursor at item text start")
+
+  set_cursor(2, 5)
+  press("x")
+  eq(lines()[2], "[X] a")
+  ok_item_text_col("short item text should keep cursor at or after item text start")
 end
 
 tests.visual_marking = function()
@@ -222,12 +384,17 @@ tests.filtering = function()
   })
 
   vim.api.nvim_buf_set_lines(0, 0, -1, false, { "no-match" })
-  require("sift.view").update_filter_from_buffer(0)
+  local ok_filter, filter_err = pcall(require("sift.view").update_filter_from_buffer, 0)
+  ok(ok_filter, "empty filtered results should not error: " .. tostring(filter_err))
   eq(vim.api.nvim_buf_get_lines(list_buf, 0, -1, false), { "" })
 end
 
-tests.browser_wrapper = function()
-  setup("browser")
+tests.open_references_keymap = function()
+  setup("open_references_keymap", {
+    references = {
+      "https://example.test/%s",
+    },
+  })
   local browser = require("sift.browser")
   local calls = {}
 
@@ -235,7 +402,38 @@ tests.browser_wrapper = function()
     table.insert(calls, vim.deepcopy(args))
     local stdout = ""
     if args[1] == "list" and args[2] == "windows" then
-      stdout = "[10] window\n[20] window\n"
+      stdout = "[42] window\n"
+    end
+    if callback then
+      callback({ code = 0, stdout = stdout, stderr = "" })
+    end
+  end)
+
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha beta", "[ ] gamma" })
+  vim.cmd.edit(path)
+
+  press("s")
+
+  eq(calls[1], { "open", "https://example.test/alpha%20beta", "-n" })
+  eq(calls[2], { "list", "windows" })
+end
+
+tests.browser_wrapper = function()
+  setup("browser")
+  local browser = require("sift.browser")
+  local calls = {}
+  local window_outputs = {
+    "[10] window\n",
+    "[10] window\n[20] window\n",
+    "[10] window\n[20] window\n",
+  }
+
+  browser.set_runner(function(args, callback)
+    table.insert(calls, vim.deepcopy(args))
+    local stdout = ""
+    if args[1] == "list" and args[2] == "windows" then
+      stdout = table.remove(window_outputs, 1) or "[10] window\n[20] window\n"
     elseif args[1] == "list" and args[2] == "tabs" then
       stdout = "* [100] active\n[101] extra\n"
     end
@@ -256,10 +454,120 @@ tests.browser_wrapper = function()
   eq(calls[3], { "open", "https://dict.test/beta", "-n" })
   eq(calls[4], { "list", "windows" })
   eq(calls[5], { "list", "windows" })
-  eq(calls[6], { "list", "tabs", "-w", "20" })
-  eq(calls[7], { "open", "https://example.test/gamma", "-w", "20", "-t", "100" })
-  eq(calls[8], { "list", "tabs", "-w", "20" })
+  eq(calls[6], { "list", "tabs", "-w", "10" })
+  eq(calls[7], { "open", "https://example.test/gamma", "-t", "100" })
+  eq(calls[8], { "list", "tabs", "-w", "10" })
   eq(calls[9], { "close", "-t", "101" })
+end
+
+tests.browser_wrapper_first_press_and_second_press_reuse = function()
+  setup("browser_reuse")
+  local browser = require("sift.browser")
+  local calls = {}
+  local window_outputs = {
+    "[20] window\n",
+    "[20] window\n",
+  }
+
+  browser.set_runner(function(args, callback)
+    table.insert(calls, vim.deepcopy(args))
+    local stdout = ""
+    if args[1] == "list" and args[2] == "windows" then
+      stdout = table.remove(window_outputs, 1) or "[20] window\n"
+    elseif args[1] == "list" and args[2] == "tabs" then
+      stdout = "* [100] active\n[101] extra\n"
+    end
+    if callback then
+      callback({ code = 0, stdout = stdout, stderr = "" })
+    end
+  end)
+
+  browser.open_reference(1, "https://example.test/%s", "alpha", { chrome_cli = "chrome-cli" })
+  browser.open_reference(1, "https://example.test/%s", "beta", { chrome_cli = "chrome-cli" })
+
+  eq(calls[1], { "open", "https://example.test/alpha", "-n" })
+  eq(calls[2], { "list", "windows" })
+  eq(calls[3], { "list", "windows" })
+  eq(calls[4], { "list", "tabs", "-w", "20" })
+  eq(calls[5], { "open", "https://example.test/beta", "-t", "100" })
+  eq(calls[6], { "list", "tabs", "-w", "20" })
+  eq(calls[7], { "close", "-t", "101" })
+end
+
+tests.browser_wrapper_reuse_failure_skips_cleanup_and_notifies = function()
+  setup("browser_reuse_failure")
+  local browser = require("sift.browser")
+  local calls = {}
+
+  local notifications = capture_notify(function()
+    browser.set_runner(function(args, callback)
+      table.insert(calls, vim.deepcopy(args))
+      local result = { code = 0, stdout = "", stderr = "" }
+      if args[1] == "list" and args[2] == "windows" then
+        result.stdout = "[20] window\n"
+      elseif args[1] == "list" and args[2] == "tabs" then
+        result.stdout = "* [100] active\n[101] extra\n"
+      elseif args[1] == "open" and args[2] == "https://example.test/beta" then
+        result = { code = 1, stdout = "", stderr = "tab update failed" }
+      end
+      if callback then
+        callback(result)
+      end
+    end)
+
+    browser.open_reference(1, "https://example.test/%s", "alpha", { chrome_cli = "chrome-cli" })
+    browser.open_reference(1, "https://example.test/%s", "beta", { chrome_cli = "chrome-cli" })
+  end)
+
+  eq(calls[1], { "open", "https://example.test/alpha", "-n" })
+  eq(calls[2], { "list", "windows" })
+  eq(calls[3], { "list", "windows" })
+  eq(calls[4], { "list", "tabs", "-w", "20" })
+  eq(calls[5], { "open", "https://example.test/beta", "-t", "100" })
+  eq(#calls, 5, "failed reuse should not list tabs for cleanup or close tabs")
+  eq(#notifications, 1)
+  eq(notifications[1].level, vim.log.levels.ERROR)
+  ok(
+    notifications[1].message:find("chrome-cli open https://example.test/beta -t 100", 1, true),
+    "failure should include the failed chrome-cli command"
+  )
+  ok(notifications[1].message:find("tab update failed", 1, true), "failure should include stderr")
+  ok(
+    not notifications[1].message:find("-w 20 -t 100", 1, true),
+    "failure should not include the invalid window-plus-tab command shape"
+  )
+end
+
+tests.browser_wrapper_replaces_closed_window = function()
+  setup("browser_closed_window")
+  local browser = require("sift.browser")
+  local calls = {}
+  local window_outputs = {
+    "[20] window\n",
+    "[10] window\n",
+    "[10] window\n[30] window\n",
+  }
+
+  browser.set_runner(function(args, callback)
+    table.insert(calls, vim.deepcopy(args))
+    local stdout = ""
+    if args[1] == "list" and args[2] == "windows" then
+      stdout = table.remove(window_outputs, 1) or "[10] window\n[30] window\n"
+    end
+    if callback then
+      callback({ code = 0, stdout = stdout, stderr = "" })
+    end
+  end)
+
+  browser.open_reference(1, "https://example.test/%s", "alpha", { chrome_cli = "chrome-cli" })
+  browser.open_reference(1, "https://example.test/%s", "beta", { chrome_cli = "chrome-cli" })
+
+  eq(calls[1], { "open", "https://example.test/alpha", "-n" })
+  eq(calls[2], { "list", "windows" })
+  eq(calls[3], { "list", "windows" })
+  eq(calls[4], { "open", "https://example.test/beta", "-n" })
+  eq(calls[5], { "list", "windows" })
+  eq(#calls, 5, "closed remembered window should be replaced without attempting tab reuse")
 end
 
 local function run_test(name, fn)
