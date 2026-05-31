@@ -28,6 +28,10 @@ local function lines(bufnr)
   return vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
 end
 
+local function cursor_col()
+  return vim.api.nvim_win_get_cursor(0)[2]
+end
+
 local function press(keys)
   local encoded = vim.api.nvim_replace_termcodes(keys, true, false, true)
   vim.api.nvim_feedkeys(encoded, "x", false)
@@ -149,6 +153,64 @@ tests.save_normalizes_existing_files = function()
   eq(vim.bo.modified, false)
 end
 
+tests.cursor_opens_at_item_text_column = function()
+  setup("cursor_open")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha" })
+
+  vim.cmd.edit(path)
+
+  eq(cursor_col(), 4)
+end
+
+tests.cursor_zero_clamps_to_item_text_column = function()
+  setup("cursor_zero")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[D] alpha" })
+
+  vim.cmd.edit(path)
+  vim.api.nvim_win_set_cursor(0, { 1, 7 })
+  press("0")
+
+  eq(cursor_col(), 4)
+end
+
+tests.cursor_render_clamps_to_item_text_column = function()
+  setup("cursor_render")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha" })
+
+  vim.cmd.edit(path)
+  vim.api.nvim_win_set_cursor(0, { 1, 7 })
+  press("d")
+
+  eq(lines(), { "[D] alpha" })
+  eq(cursor_col(), 4)
+end
+
+tests.cursor_h_clamps_to_item_text_column = function()
+  setup("cursor_h")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[A] alpha" })
+
+  vim.cmd.edit(path)
+  eq(cursor_col(), 4)
+  press("h")
+
+  eq(cursor_col(), 4)
+end
+
+tests.cursor_empty_item_text_does_not_error = function()
+  setup("cursor_empty_item")
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] " })
+
+  vim.cmd.edit(path)
+  press("0")
+
+  eq(cursor_col(), 4)
+end
+
 tests.marking_undo_redo_and_recovery = function()
   local dir = setup("marking")
   local path = dir .. "/items.sift"
@@ -222,7 +284,8 @@ tests.filtering = function()
   })
 
   vim.api.nvim_buf_set_lines(0, 0, -1, false, { "no-match" })
-  require("sift.view").update_filter_from_buffer(0)
+  local ok_filter, filter_err = pcall(require("sift.view").update_filter_from_buffer, 0)
+  ok(ok_filter, "empty filtered results should not error: " .. tostring(filter_err))
   eq(vim.api.nvim_buf_get_lines(list_buf, 0, -1, false), { "" })
 end
 
