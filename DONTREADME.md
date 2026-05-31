@@ -48,6 +48,10 @@ Yes. `sift` trims each line's string and removes duplicates while building a lis
 
 No. `sift` shows lists in Neovim. You get to leverage Neovim's performance and reuse your configuration.
 
+> Does Neovim stay focused when I open a reference?
+
+Yes. If the focus shifts to the browser when you open a reference, it'd break your sifting flow.
+
 > Does `sift` use AppleScript to open reference tabs?
 
 No. `sift` uses a Chrome extension.
