@@ -3,18 +3,34 @@ local M = {}
 local windows = {}
 local runner = nil
 
-local function notify_failure(args, result)
+local function notify_failure(opts, args, result)
   local stderr = result and result.stderr or ""
-  local message = "sift: chrome-cli failed: " .. table.concat(args, " ")
+  local command = vim.list_extend({ opts.chrome_cli or "chrome-cli" }, vim.deepcopy(args))
+  local message = "sift: chrome-cli failed"
+  if result and result.code then
+    message = message .. " (exit " .. tostring(result.code) .. ")"
+  end
+  message = message .. ": " .. table.concat(command, " ")
   if stderr ~= "" then
     message = message .. "\n" .. stderr
   end
   vim.notify(message, vim.log.levels.ERROR)
 end
 
+local function handle_result(opts, args, callback, result)
+  if result and result.code ~= 0 then
+    notify_failure(opts, args, result)
+  end
+  if callback then
+    callback(result)
+  end
+end
+
 local function run(opts, args, callback)
   if runner then
-    runner(args, callback, opts)
+    runner(args, function(result)
+      handle_result(opts, args, callback, result)
+    end, opts)
     return
   end
 
@@ -24,12 +40,7 @@ local function run(opts, args, callback)
   if vim.system then
     vim.system(cmd, { text = true }, function(result)
       vim.schedule(function()
-        if result.code ~= 0 then
-          notify_failure(args, result)
-        end
-        if callback then
-          callback(result)
-        end
+        handle_result(opts, args, callback, result)
       end)
     end)
     return
@@ -53,12 +64,7 @@ local function run(opts, args, callback)
           stdout = table.concat(stdout, "\n"),
           stderr = table.concat(stderr, "\n"),
         }
-        if code ~= 0 then
-          notify_failure(args, result)
-        end
-        if callback then
-          callback(result)
-        end
+        handle_result(opts, args, callback, result)
       end)
     end,
   })
@@ -159,11 +165,11 @@ local function reuse_window(window_id, url, opts)
 
     local open_args = { "open", url, "-w", tostring(window_id) }
     if active then
-      vim.list_extend(open_args, { "-t", tostring(active.id) })
+      open_args = { "open", url, "-t", tostring(active.id) }
     end
 
-    run(opts, open_args, function()
-      if active then
+    run(opts, open_args, function(open_result)
+      if active and open_result and open_result.code == 0 then
         close_extra_tabs(window_id, active.id, opts)
       end
     end)
