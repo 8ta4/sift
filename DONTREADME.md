@@ -48,6 +48,12 @@ Yes. `sift` trims each line's string and removes duplicates while building a lis
 
 No. `sift` shows lists in Neovim. You get to leverage Neovim's performance and reuse your configuration.
 
+> Does `sift` use AppleScript to open reference tabs?
+
+No. `sift` uses a Chrome extension.
+
+Automating Google Chrome via AppleScript forces the browser window to grab focus when a tab is updated.
+
 > Can I use [Vimium](https://github.com/philc/vimium) to navigate within reference windows?
 
 Yes. You can pair `sift` with Vimium to get around.
