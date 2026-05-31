@@ -49,7 +49,9 @@ vim.api.nvim_create_autocmd("VimEnter", {
   once = true,
   callback = function()
     require("sift").setup({
-      references = {},
+      references = {
+        "https://en.wiktionary.org/wiki/%s",
+      },
       recovery_path = vim.fn.stdpath("state") .. "/sift/",
     })
   end,
@@ -58,7 +60,7 @@ LUA
 
 printf 'sift manual smoke-test temp directory: %s\n' "$tmp_dir"
 printf 'sample file: %s\n' "$sample_file"
-printf '%s\n' 'In Neovim, press d/a/x/c to mark, :w to save, and :q to exit.'
+printf '%s\n' 'In Neovim, press s to open a Wiktionary reference, d/a/x/c to mark, :w to save, and :q to exit.'
 
 set +e
 SIFT_MANUAL_REPO_ROOT=$repo_root \

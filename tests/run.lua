@@ -226,6 +226,36 @@ tests.filtering = function()
   eq(vim.api.nvim_buf_get_lines(list_buf, 0, -1, false), { "" })
 end
 
+tests.open_references_keymap = function()
+  setup("open_references_keymap", {
+    references = {
+      "https://example.test/%s",
+    },
+  })
+  local browser = require("sift.browser")
+  local calls = {}
+
+  browser.set_runner(function(args, callback)
+    table.insert(calls, vim.deepcopy(args))
+    local stdout = ""
+    if args[1] == "list" and args[2] == "windows" then
+      stdout = "[42] window\n"
+    end
+    if callback then
+      callback({ code = 0, stdout = stdout, stderr = "" })
+    end
+  end)
+
+  local path = vim.fn.getcwd() .. "/items.sift"
+  write(path, { "[ ] alpha beta", "[ ] gamma" })
+  vim.cmd.edit(path)
+
+  press("s")
+
+  eq(calls[1], { "open", "https://example.test/alpha%20beta", "-n" })
+  eq(calls[2], { "list", "windows" })
+end
+
 tests.browser_wrapper = function()
   setup("browser")
   local browser = require("sift.browser")
