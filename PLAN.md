@@ -2,11 +2,11 @@
 
 ## Summary
 
-Build the modern Neovim Lua plugin described by `README.md` and `DONTREADME.md` from the current docs-only repo. Target macOS, current stable Neovim, lazy.nvim usage, and `chrome-cli`.
+Build the modern Neovim Lua plugin described by `README.md` and `DONTREADME.md` from the current repo. Target macOS, current stable Neovim, lazy.nvim usage, and the Sift Chrome extension.
 
 ## Public Interfaces
 
-- Add `require("sift").setup(opts)` with defaults for keymaps, `references = {}`, `chrome_cli = "chrome-cli"`, and recovery path `vim.fn.stdpath("state") .. "/sift/"`.
+- Add `require("sift").setup(opts)` with defaults for keymaps, `references = {}`, and recovery path `vim.fn.stdpath("state") .. "/sift/"`.
 - Register only `:Sift <name>`:
   - Read clipboard lines, trimming each line.
   - Ignore empty trimmed lines.
@@ -46,7 +46,8 @@ Build the modern Neovim Lua plugin described by `README.md` and `DONTREADME.md` 
   - Use pure Lua first with cached arrays and virtualized/render-window updates where needed.
 - References:
   - The reference-opening mapping applies configured URL templates to the cursor item text using percent encoding.
-  - Browser calls run asynchronously through a small `chrome-cli` wrapper.
+  - Browser calls run asynchronously through a small Sift Chrome extension bridge.
+  - The Neovim side sends reference URL, window, and tab management requests to the extension without forcing browser focus.
   - Give each configured reference source its own Chrome window so multiple references can be viewed at once.
   - If the window `sift` opened for a reference source was closed, create a replacement window the next time that source is opened.
   - If the window `sift` opened for a reference source is still open, reuse that window instead of opening another one.
@@ -64,7 +65,7 @@ Build the modern Neovim Lua plugin described by `README.md` and `DONTREADME.md` 
 - Keymap tests for documented list-window and filter-window mappings without overriding unrelated default navigation.
 - Marking tests for normal mode, visual mode, undo/redo transactions, modified state, and recovery replay with matching item text.
 - Filtering tests for status toggles, split filter window creation, preloaded active regex, Insert-mode entry, regex apply/clear, invalid-regex fallback, empty result display, and "marked item remains visible until refiltered."
-- Reference-opening tests through the documented keymap, plus browser wrapper tests for URL template expansion, percent encoding, async command invocation, surfaced command failures, one window per reference source, window reuse, active-tab targeting, and closing extra tabs in reused windows.
+- Reference-opening tests through the documented keymap, plus Chrome extension bridge tests for URL template expansion, percent encoding, async request dispatch, surfaced bridge failures, one window per reference source, window reuse, active-tab targeting, and closing extra tabs in reused windows.
 - Performance tests generating one million items and benchmarking pure-Lua filtering against the documented 0.1s target.
 - Do not require direct public calls to marking, filtering, status-toggle, or reference-opening helpers; implementation modules may still expose internals to tests where useful.
 
@@ -76,4 +77,5 @@ Build the modern Neovim Lua plugin described by `README.md` and `DONTREADME.md` 
 - `:Sift!` is intentionally out of scope.
 - `require("sift").setup(opts)` is the only required Lua public API.
 - Internal modules may define functions for marking, filtering, toggling status visibility, or opening references, but those functions are not part of the external API contract.
-- Browser extensions for ads, dark mode, and Vimium remain external and are not implemented by `sift`.
+- The Sift Chrome extension is in scope for opening references and managing its Chrome windows and tabs.
+- Third-party browser extensions for ads, dark mode, and Vimium remain external and are not implemented by `sift`.
