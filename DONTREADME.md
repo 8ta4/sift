@@ -32,11 +32,53 @@ Yes. The goal is under 0.1 seconds for lists with up to one million items.
 
 Yes. You can pair `sift` with [Dark Reader](https://github.com/darkreader/darkreader).
 
-## Lists
+## Creating
+
+> Will `sift` convert an empty line from your clipboard into an item?
+
+No.
+
+> Can `sift` remove duplicate items?
+
+Yes. `sift` trims each line's string and removes duplicates while building a list.
+
+## Navigating
 
 > Does `sift` show lists in a browser?
 
 No. `sift` shows lists in Neovim. You get to leverage Neovim's performance and reuse your configuration.
+
+> Can I use [Vimium](https://github.com/philc/vimium) to navigate within reference windows?
+
+Yes. You can pair `sift` with Vimium to get around.
+
+> Does `sift` open multiple references in the same window?
+
+No. `sift` gives each reference source its own window. That way, you can glance at multiple references at once.
+
+> If I close the `sift` window and hit `s`, will `sift` open a new one?
+
+Yes.
+
+> If you press `s` while the window opened by `sift` is still open, will `sift` open a new window?
+
+No. This will stop the windows count from getting out of hand.
+
+> If you press `s` while the window opened by `sift` is still open, which tab of that window does `sift` use to open a reference?
+
+`sift` uses whichever tab is active in that window.
+
+Changing tabs could look jarring.
+
+> Can `sift` close tabs?
+
+Yes. If you press `s` when you have a bunch of tabs open in a window that `sift` has opened, `sift` will open a reference in the active tab and close the other tabs in the window.
+
+When you manually open one additional tab in the same window, you can press `⌘ + Shift + [` to navigate to the reference tab. Even when you have a bunch of extra tabs open in the same window, you can still press `⌘ + 1` to go to the reference tab.
+
+Even if you accidentally hit `s` and closed some tabs, you can try reopening them by pressing `⌘ + Shift + t`.
+
+## Marking
 
 > If I've pressed `D` to hide done items, does marking an item as done make it disappear?
 
@@ -46,16 +88,20 @@ No. The item remains visible for the following reasons:
 
 - Suppose you've also pressed `X` to hide deleted items and you mean to press `d` but accidentally hit `x`. If the item disappeared without distinct feedback, you'd lack clear confirmation of whether it was marked done or deleted.
 
-## References
+## Filtering
 
-> Can I use [Vimium](https://github.com/philc/vimium) to navigate within reference windows?
+> If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
 
-Yes. You can pair `sift` with Vimium to get around.
+Yes. `sift` will grab the most recent valid regex from the filter window and use it to filter the list.
 
-> Can `sift` reuse tabs for references?
+> If the filter window's regex matches nothing, does the list window show an empty list?
 
-Yes. If a tab for that target is already open, `sift` reuses it.
+Yes. Displaying an empty list might look pointless. But some items become visible when you press `D` or other keys. So, an empty list might actually be useful.
 
-> If a tab is not open, does `sift` open the reference in a separate window?
+> Is the filter window a floating one or a split one?
 
-Yes. `sift` opens the new tab in a separate window so you can view multiple references simultaneously. You can use your window manager to tile the windows.
+The filter window is a split one. A split window lets you quickly hop between the filter window and the list window using Neovim's usual navigation commands.
+
+> Does opening the filter window clear the regex filter I'm using?
+
+No. The filter window comes preloaded with the active regex.
