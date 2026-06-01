@@ -34,6 +34,16 @@ Yes. You can pair `sift` with [Dark Reader](https://github.com/darkreader/darkre
 
 ## Architecture
 
+> Does `sift` use AppleScript to open reference tabs?
+
+No.
+
+When you set a tab's URL via AppleScript without using JavaScript, Chrome ends up taking the OS focus.
+
+I could get the focus back onto your terminal. If you type it quickly, Nvim could miss some keystrokes.
+
+To avoid focus‑stealing, I can fire up AppleScript to run JavaScript inside Chrome. But you'll need to turn on Chrome's `Allow JavaScript from Apple Events` setting. That setting could open your machine up to security risks.
+
 > Does the extension connect to a local HTTP server to talk to the CLI?
 
 No.
