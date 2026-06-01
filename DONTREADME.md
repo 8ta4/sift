@@ -136,6 +136,17 @@ No. The item remains visible for the following reasons:
 
 - Suppose you've also pressed `X` to hide deleted items and you mean to press `d` but accidentally hit `x`. If the item disappeared without distinct feedback, you'd lack clear confirmation of whether it was marked done or deleted.
 
+## Saving
+
+> What directory contains my unsaved data?
+
+`sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
+
+Storing logs here stops your working directory from getting messy. To figure out the exact path on your machine, run:
+
+`:lua print(vim.fn.stdpath("state") .. "/sift/")`
+
+
 ## Filtering
 
 > If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
