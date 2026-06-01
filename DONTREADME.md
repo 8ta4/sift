@@ -140,13 +140,19 @@ No. The item remains visible for the following reasons:
 
 ### Saving
 
-> What directory contains my unsaved data?
+> If I mark an item and Neovim crashes before I save, does `sift` keep recovery logs?
+
+Yes.
+
+> Where does `sift` store recovery logs?
 
 `sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
 
 Storing logs here stops your working directory from getting messy. To figure out the exact path on your machine, run:
 
-`:lua print(vim.fn.stdpath("state") .. "/sift/")`
+```
+:lua print(vim.fn.stdpath("state") .. "/sift/")
+```
 
 ### Filtering
 
