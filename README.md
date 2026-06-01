@@ -17,6 +17,7 @@
    ```lua
    {
      "8ta4/sift",
+     build = "./install.sh",
      opts = {
        references = {
          "https://en.wiktionary.org/wiki/%s",
@@ -26,6 +27,16 @@
    ```
 
 1. Install the Chrome extension.
+
+1. Open a terminal.
+
+1. Run the following commands:
+
+   ```bash
+   brew install node
+   npm install -g neovim
+   nvim --headless "+Lazy load sift" +UpdateRemotePlugins +qa!
+   ```
 
 ## Usage
 
