@@ -154,6 +154,22 @@ Storing logs here stops your working directory from getting messy. To figure out
 :lua print(vim.fn.stdpath("state") .. "/sift/")
 ```
 
+> When I reopen a file, will `sift` reapply the same filters as before?
+
+No. The items that were unhidden at the time of closing remain unhidden. Excel works like this.
+
+But `sift` keeps track of the filters you used before closing the file. If you add another filter after reopening the file, the combined effect is just like you never reopened it.
+
+> When I reopen a file, will the cursor stay on the same item as before?
+
+Yes.
+
+But the scroll position could change. Neovim behaves like this with other types of files.
+
+> If I open the file again, will the cursor land on the same column as before?
+
+Yes. Neovim acts like this with other file types.
+
 ### Filtering
 
 > If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
