@@ -40,11 +40,11 @@ No.
 
 When you set a tab's URL via AppleScript without using JavaScript, Chrome ends up taking the OS focus.
 
-I could get the focus back onto your terminal. If you type it quickly, Nvim could miss some keystrokes.
+I could get the focus back onto your terminal. If you type it quickly, Neovim could miss some keystrokes.
 
 To avoid focus‑stealing, I can fire up AppleScript to run JavaScript inside Chrome. But you'll need to turn on Chrome's `Allow JavaScript from Apple Events` setting. That setting could open your machine up to security risks.
 
-> Does the extension connect to a local HTTP server to talk to the CLI?
+> Does the extension connect to a local HTTP server to talk to the plugin?
 
 No.
 
@@ -52,19 +52,19 @@ No.
 
 - It's also a polling nightmare. Truly appalling. The extension has to keep asking, "Do you have a job for me?"
 
-> Does the extension connect to a local WebSocket server to talk to the CLI?
+> Does the extension connect to a local WebSocket server to talk to the plugin?
 
 No.
 
 You're opening a network port. So that security risk is on the table.
 
-Instead, the extension connects to a native messaging host to talk to the CLI.
+Instead, the extension connects to a native messaging host to talk to the plugin.
 
 > Will the service worker connected to a native host go inactive?
 
 No. "[Connecting to a native messaging host using chrome.runtime.connectNative() will keep a service worker alive.](<https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle#:~:text=Connecting%20to%20a%20native%20messaging%20host%20using%20chrome.runtime.connectNative()%20will%20keep%20a%20service%20worker%20alive.>)"
 
-> Does the CLI connect to a WebSocket on the Native Messaging host?
+> Does the plugin connect to a WebSocket on the Native Messaging host?
 
 No. That would mean opening a network port, which is a security risk.
 
