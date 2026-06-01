@@ -70,7 +70,9 @@ No. That would mean opening a network port, which is a security risk.
 
 Instead, it just uses a UNIX domain socket.
 
-## Creating
+## Functionality
+
+### Creating
 
 > Will `sift` convert an empty line from your clipboard into an item?
 
@@ -80,7 +82,7 @@ No.
 
 Yes. `sift` trims each line's string and removes duplicates while building a list.
 
-## Navigating
+### Navigating
 
 > Does `sift` show lists in a browser?
 
@@ -126,7 +128,7 @@ When you manually open one additional tab in the same window, you can press `⌘
 
 Even if you accidentally hit `s` and closed some tabs, you can try reopening them by pressing `⌘ + Shift + t`.
 
-## Marking
+### Marking
 
 > If I've pressed `D` to hide done items, does marking an item as done make it disappear?
 
@@ -136,7 +138,7 @@ No. The item remains visible for the following reasons:
 
 - Suppose you've also pressed `X` to hide deleted items and you mean to press `d` but accidentally hit `x`. If the item disappeared without distinct feedback, you'd lack clear confirmation of whether it was marked done or deleted.
 
-## Saving
+### Saving
 
 > What directory contains my unsaved data?
 
@@ -146,8 +148,7 @@ Storing logs here stops your working directory from getting messy. To figure out
 
 `:lua print(vim.fn.stdpath("state") .. "/sift/")`
 
-
-## Filtering
+### Filtering
 
 > If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
 
