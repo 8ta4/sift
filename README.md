@@ -66,6 +66,23 @@ In Visual mode, `s` opens the references only for the item under the cursor.
 
 `Space` is often used as a leader key. `a`, `s` and `d` are the only home row keys left that don't have default functions in a read-only buffer. Out of those, `s` is likely the second easiest to type.
 
+> Can I add more references?
+
+Yes. Put another reference in your `lazy.nvim` setup:
+
+```lua
+{
+  "8ta4/sift",
+  build = "./install.sh",
+  opts = {
+    references = {
+      "https://en.wiktionary.org/wiki/%s",
+      "https://www.google.com/search?q=%s&udm=2",
+    },
+  },
+}
+```
+
 ### Marking
 
 > In Normal mode, how do I mark an item as done?
