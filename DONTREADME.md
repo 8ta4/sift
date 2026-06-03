@@ -172,6 +172,48 @@ Yes. Neovim acts like this with other file types.
 
 ### Filtering
 
+> Is the filter window a floating one or a split one?
+
+The filter window is a split one. A split window lets you quickly hop between the filter window and the list window using Neovim's usual navigation commands.
+
+> If the filter doesn't hide the item under the cursor, will the cursor stay on that same item?
+
+Yes. Excel works like this.
+
+If the cursor kept jumping around, it'd be disorienting.
+
+> If a filter doesn't hide the item under the cursor, will the cursor stay on the same column?
+
+Yes.
+
+> If a filter hides the item under the cursor, will the cursor stay on the same item?
+
+No.
+
+In Excel, the active cell stays the same even if a filter hides it.
+
+A cursor in Neovim must be somewhere on the screen.
+
+If all items get hidden, the cursor ends up on an empty line.
+
+If any item stays visible, the cursor moves to one of the visible ones. The cursor will hop to the closest visible item that's lower in the unfiltered list than the one under the cursor, if such an item exists. If there's no lower item, the cursor will hop to the nearest visible item that sits above the current one in the unfiltered list.
+
+> If a filter hides the item under the cursor and I clear it right away, will the cursor jump back to that specific item?
+
+Yes.
+
+If you move the cursor before clearing the filter, it might not hop back to that specific item.
+
+Excel works like that.
+
+> If a filter hides the item under the cursor, can the cursor remain on the same column?
+
+Yes. If the item the cursor will land on has enough columns, the cursor will stay on the same column. Otherwise, the cursor snaps to the last column.
+
+> Does opening the filter window clear the regex filter I'm using?
+
+No. The filter window comes preloaded with the active regex.
+
 > If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
 
 Yes. `sift` will grab the most recent valid regex from the filter window and use it to filter the list.
@@ -179,11 +221,3 @@ Yes. `sift` will grab the most recent valid regex from the filter window and use
 > If the filter window's regex matches nothing, does the list window show an empty list?
 
 Yes. Displaying an empty list might look pointless. But some items become visible when you press `D` or other keys. So, an empty list might actually be useful.
-
-> Is the filter window a floating one or a split one?
-
-The filter window is a split one. A split window lets you quickly hop between the filter window and the list window using Neovim's usual navigation commands.
-
-> Does opening the filter window clear the regex filter I'm using?
-
-No. The filter window comes preloaded with the active regex.
