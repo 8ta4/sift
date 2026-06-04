@@ -30,9 +30,8 @@
   scripts.hello.exec = ''
     echo hello from $GREET
   '';
-  scripts.run.exec = ''
-    nvim demo.sift
-  '';
+  scripts.release.exec = "shadow-cljs release main";
+  scripts.run.exec = "nvim demo.sift";
   scripts.watch.exec = ''
     nvim +star "+te tail -F node.log -n +1"
   '';
