@@ -1,5 +1,6 @@
 (ns main
-  (:require [clojure.string :refer [join split-lines trim]]
+  (:require [cljs-node-io.core :refer [spit]]
+            [clojure.string :refer [split-lines trim]]
             [promesa.core :as promesa]))
 
 (defonce state
@@ -11,16 +12,15 @@
          #(js->clj % :keywordize-keys true)))
 
 (def clean
-  (comp (partial join "\n")
-        distinct
+  (comp distinct
         (partial remove empty?)
         (partial map trim)
         split-lines))
 
 (defn sift
-  [filename]
+  [f]
   (promesa/let [s (call-function "getreg" ["+"])]
-    (clean s)))
+    (spit (str f ".sift") (pr-str (clean s)))))
 
 (defn register-command
   [plugin command-name handle options]
