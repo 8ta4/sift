@@ -52,6 +52,7 @@
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
+    (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
                (clj->js (if (existsSync path)
                           (map render-item
