@@ -36,9 +36,11 @@
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
-    (if (existsSync path)
-      (read-string (slurp path))
-      [])))
+    (.setLines buffer
+               (clj->js (if (existsSync path)
+                          (read-string (slurp path))
+                          []))
+               (clj->js {:start 0 :end -1}))))
 
 (defn main
   [plugin]
