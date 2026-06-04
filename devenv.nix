@@ -53,6 +53,7 @@
   # https://devenv.sh/git-hooks/
   # git-hooks.hooks.shellcheck.enable = true;
   git-hooks.hooks = {
+    cljfmt.enable = true;
     end-of-file-fixer.enable = true;
     gitleaks = {
       enable = true;
