@@ -1,1 +1,1 @@
-("one" "two" "three")
+({:mark :c, :text "one"} {:mark :c, :text "two"} {:mark :c, :text "three"})

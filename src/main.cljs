@@ -13,8 +13,14 @@
   (.then (.callFunction (:nvim @state) function-name (clj->js options))
          #(js->clj % :keywordize-keys true)))
 
-(def clean
-  (comp distinct
+(defn make-item
+  [s]
+  {:mark :c
+   :text s})
+
+(def parse
+  (comp (partial map make-item)
+        distinct
         (partial remove empty?)
         (partial map trim)
         split-lines))
@@ -23,7 +29,7 @@
   [f]
   (promesa/let [s (call-function "getreg" ["+"])]
     (->> s
-         clean
+         parse
          pr-str
          (spit (str f ".sift")))
     (.command (:nvim @state) (str "e " f ".sift"))))
@@ -38,7 +44,8 @@
                 path (.-name buffer)]
     (.setLines buffer
                (clj->js (if (existsSync path)
-                          (read-string (slurp path))
+                          (map :text
+                               (read-string (slurp path)))
                           []))
                (clj->js {:start 0 :end -1}))))
 
