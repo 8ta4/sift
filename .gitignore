@@ -1,3 +1,9 @@
+# clj-kondo
+.clj-kondo
+
+# language server protocol
+.lsp
+
 # Devenv
 .devenv*
 devenv.local.nix
@@ -30,3 +36,6 @@ pom.xml.asc
 
 .hgignore
 .hg/
+
+# sift
+rplugin
