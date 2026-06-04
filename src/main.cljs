@@ -1,7 +1,7 @@
 (ns main
   (:require [cljs-node-io.core :refer [slurp spit]]
             [clojure.edn :refer [read-string]]
-            [clojure.string :refer [split-lines trim]]
+            [clojure.string :as string :refer [split-lines trim]]
             [fs :refer [existsSync]]
             [promesa.core :as promesa]))
 
@@ -34,6 +34,16 @@
          (spit (str f ".sift")))
     (.command (:nvim @state) (str "e " f ".sift"))))
 
+(defn render-item
+  [item]
+  (str "["
+       (-> item
+           :mark
+           name
+           (string/replace "c" " "))
+       "] "
+       (:text item)))
+
 (defn register-command
   [plugin command-name handle options]
   (.registerCommand plugin command-name #(apply handle (js->clj % :keywordize-keys true)) (clj->js options)))
@@ -44,7 +54,7 @@
                 path (.-name buffer)]
     (.setLines buffer
                (clj->js (if (existsSync path)
-                          (map :text
+                          (map render-item
                                (read-string (slurp path)))
                           []))
                (clj->js {:start 0 :end -1}))))
