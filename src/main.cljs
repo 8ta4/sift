@@ -1,4 +1,6 @@
-(ns main)
+(ns main
+  (:require [clojure.string :refer [join split-lines trim]]
+            [promesa.core :as promesa]))
 
 (defonce state
   (atom {}))
@@ -8,9 +10,17 @@
   (.then (.callFunction (:nvim @state) fname (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
+(def clean
+  (comp (partial join "\n")
+        distinct
+        (partial remove empty?)
+        (partial map trim)
+        split-lines))
+
 (defn sift
   []
-  (call-function "getreg" ["+"]))
+  (promesa/let [s (call-function "getreg" ["+"])]
+    (clean s)))
 
 (defn main
   [plugin]
