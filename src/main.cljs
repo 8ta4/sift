@@ -20,7 +20,8 @@
 (defn sift
   [f]
   (promesa/let [s (call-function "getreg" ["+"])]
-    (spit (str f ".sift") (pr-str (clean s)))))
+    (spit (str f ".sift") (pr-str (clean s)))
+    (.command (:nvim @state) (str "e " f ".sift"))))
 
 (defn register-command
   [plugin command-name handle options]
