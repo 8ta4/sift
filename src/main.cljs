@@ -1,6 +1,8 @@
 (ns main
-  (:require [cljs-node-io.core :refer [spit]]
+  (:require [cljs-node-io.core :refer [slurp spit]]
+            [clojure.edn :refer [read-string]]
             [clojure.string :refer [split-lines trim]]
+            [fs :refer [existsSync]]
             [promesa.core :as promesa]))
 
 (defonce state
@@ -30,8 +32,16 @@
   [plugin command-name handle options]
   (.registerCommand plugin command-name #(apply handle (js->clj % :keywordize-keys true)) (clj->js options)))
 
+(defn load
+  []
+  (promesa/let [buffer (.-buffer (:nvim @state))
+                path (.-name buffer)]
+    (if (existsSync path)
+      (read-string (slurp path))
+      [])))
+
 (defn main
   [plugin]
   (reset! state {:nvim (.-nvim plugin)})
-  (.registerAutocmd plugin "BufReadCmd" (fn []) (clj->js {:pattern "*.sift"}))
+  (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"}))
   (register-command plugin "Sift" sift {:nargs 1}))
