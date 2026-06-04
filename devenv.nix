@@ -30,6 +30,12 @@
   scripts.hello.exec = ''
     echo hello from $GREET
   '';
+  scripts.run.exec = ''
+    nvim demo.sift
+  '';
+  scripts.watch.exec = ''
+    nvim +star "+te tail -F node.log -n +1"
+  '';
 
   # https://devenv.sh/basics/
   enterShell = ''
@@ -37,6 +43,8 @@
     git --version # Use packages
     npm i
     export PATH="$DEVENV_ROOT/node_modules/.bin:$PATH"
+    export NVIM_NODE_LOG_FILE="$DEVENV_ROOT/node.log"
+    export NVIM_NODE_LOG_LEVEL=info
   '';
 
   # https://devenv.sh/tasks/
