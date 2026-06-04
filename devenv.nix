@@ -46,6 +46,7 @@
   # https://devenv.sh/git-hooks/
   # git-hooks.hooks.shellcheck.enable = true;
   git-hooks.hooks = {
+    end-of-file-fixer.enable = true;
     gitleaks = {
       enable = true;
       # https://github.com/gitleaks/gitleaks/blob/81fc7f93b7a0e790c3b272594b883e89f4e36c87/.pre-commit-hooks.yaml#L4
