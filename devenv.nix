@@ -53,6 +53,7 @@
       entry = "bash -c 'exec gitleaks git --redact --staged --verbose'";
     };
     prettier.enable = true;
+    trim-trailing-whitespace.enable = true;
   };
 
   # See full reference at https://devenv.sh/reference/options/
