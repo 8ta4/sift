@@ -1,11 +1,11 @@
 ;; shadow-cljs configuration
 {:source-paths
- ["src/dev"
-  "src/main"
-  "src/test"]
+ ["src"]
 
  :dependencies
  []
 
  :builds
- {}}
+ {:main {:exports {:default main/main}
+         :output-to "rplugin/node/main.js"
+         :target :node-library}}}
