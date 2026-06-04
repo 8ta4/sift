@@ -1,5 +1,5 @@
 (ns main
-  (:require [clojure.string :refer [join split-lines trim]]
+  (:require [clojure.string :refer [split-lines trim]]
             [promesa.core :as promesa]))
 
 (defonce state
@@ -11,8 +11,7 @@
          #(js->clj % :keywordize-keys true)))
 
 (def clean
-  (comp (partial join "\n")
-        distinct
+  (comp distinct
         (partial remove empty?)
         (partial map trim)
         split-lines))
