@@ -43,5 +43,6 @@
 (defn main
   [plugin]
   (reset! state {:nvim (.-nvim plugin)})
-  (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"}))
+  (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
+                                                       :sync true}))
   (register-command plugin "Sift" sift {:nargs 1}))
