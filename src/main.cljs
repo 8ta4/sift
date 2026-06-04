@@ -29,5 +29,5 @@
 (defn main
   [plugin]
   (reset! state {:nvim (.-nvim plugin)})
-  (.registerAutocmd plugin "BufEnter" (fn []) (clj->js {:pattern "*.sift"}))
+  (.registerAutocmd plugin "BufReadCmd" (fn []) (clj->js {:pattern "*.sift"}))
   (register-command plugin "Sift" sift {:nargs 1}))
