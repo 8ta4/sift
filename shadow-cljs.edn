@@ -1,0 +1,12 @@
+;; shadow-cljs configuration
+{:source-paths
+ ["src"]
+
+ :dependencies
+ [[babashka/fs "0.5.33"]]
+
+ :builds
+ {:main {:build-hooks [(build/build)]
+         :exports {:default main/main}
+         :output-to "rplugin/node/main.js"
+         :target :node-library}}}

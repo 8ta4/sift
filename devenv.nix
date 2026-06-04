@@ -13,10 +13,12 @@
     pkgs.gitleaks
     pkgs.nil
     pkgs.pre-commit
+    pkgs.rubyPackages.solargraph
   ];
 
   # https://devenv.sh/languages/
   # languages.rust.enable = true;
+  languages.clojure.enable = true;
 
   # https://devenv.sh/processes/
   # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
@@ -33,6 +35,8 @@
   enterShell = ''
     hello         # Run scripts directly
     git --version # Use packages
+    npm i
+    export PATH="$DEVENV_ROOT/node_modules/.bin:$PATH"
   '';
 
   # https://devenv.sh/tasks/
@@ -50,6 +54,7 @@
   # https://devenv.sh/git-hooks/
   # git-hooks.hooks.shellcheck.enable = true;
   git-hooks.hooks = {
+    cljfmt.enable = true;
     end-of-file-fixer.enable = true;
     gitleaks = {
       enable = true;
