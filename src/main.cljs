@@ -58,7 +58,8 @@
                           (map render-item
                                (read-string (slurp path)))
                           []))
-               (clj->js {:start 0 :end -1}))))
+               (clj->js {:start 0 :end -1}))
+    (.setOption buffer "modifiable" false)))
 
 (defn main
   [plugin]
