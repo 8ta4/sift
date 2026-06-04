@@ -5,7 +5,10 @@
   env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [ pkgs.git ];
+  packages = [
+    pkgs.git
+    pkgs.pre-commit
+  ];
 
   # https://devenv.sh/languages/
   # languages.rust.enable = true;
@@ -41,6 +44,9 @@
 
   # https://devenv.sh/git-hooks/
   # git-hooks.hooks.shellcheck.enable = true;
+  git-hooks.hooks = {
+    prettier.enable = true;
+  };
 
   # See full reference at https://devenv.sh/reference/options/
 }
