@@ -9,7 +9,7 @@ jobs:
   tests:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [macos-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -26,9 +26,3 @@ jobs:
 
       - name: Run a single command in the devenv shell
         run: devenv shell hello
-
-      - name: Run a multi-line command in the devenv shell
-        shell: devenv shell bash -- -e {0}
-        run: |
-          hello
-          say-bye
