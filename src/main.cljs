@@ -1,3 +1,4 @@
 (ns main)
 
-(defn main [])
+(defn main
+  [])
