@@ -14,6 +14,7 @@
   packages = [
     pkgs.git
     pkgs.gitleaks
+    pkgs.nil
     pkgs.pre-commit
   ];
 
