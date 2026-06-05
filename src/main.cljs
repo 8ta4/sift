@@ -3,6 +3,9 @@
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
             [fs :refer [existsSync]]
+            [net :refer [createConnection]]
+            [os :refer [tmpdir]]
+            [path :refer [join]]
             [promesa.core :as promesa]))
 
 (defonce state
@@ -57,14 +60,14 @@
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
-    ;; We use <C-U> to clear any range automatically added when a count is given (e.g., "1s").
-    ;; Without it, running a command with a count triggers "E481: No range allowed".
-    (request "nvim_buf_set_keymap" (.-id buffer) "n" "s" ":<C-U>See<CR>" {:silent true})
+    (request "nvim_buf_set_keymap" (.-id buffer) "n" "s" ":Handle s<CR>" {:silent true})
     (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
                (clj->js (if (existsSync path)
-                          (map render-item
-                               (read-string (slurp path)))
+                          (->> path
+                               slurp
+                               read-string
+                               (map render-item))
                           []))
                (clj->js {:start 0 :end -1}))
     (.setOption buffer "modifiable" false)))
@@ -74,8 +77,23 @@
   (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
     (js->clj references :keywordize-keys true)))
 
-(defn see
-  [])
+(def socket-path
+  (join (tmpdir) "sift.sock"))
+
+(defn open-references
+  []
+  (promesa/let [references (get-references)
+                line (.getLine (:nvim @state))
+                socket (createConnection socket-path)]
+    (.on socket "connect" (fn []
+                            (.write socket (pr-str {:references references
+                                                    :text (subs line 4)}))
+                            (.end socket)))))
+
+(defn handle
+  [key-name]
+  (if (= "s" key-name)
+    (open-references)))
 
 (defn main
   [plugin]
@@ -83,4 +101,5 @@
   (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
                                                        :sync true}))
   (register-command plugin "Sift" sift {:nargs 1})
-  (register-command plugin "See" see {}))
+  (register-command plugin "Handle" handle {:nargs 1
+                                            :range ""}))
