@@ -3,6 +3,8 @@
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
             [fs :refer [existsSync]]
+            [os :refer [tmpdir]]
+            [path :refer [join]]
             [promesa.core :as promesa]))
 
 (defonce state
@@ -73,6 +75,9 @@
   []
   (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
     (js->clj references :keywordize-keys true)))
+
+(def socket-path
+  (join (tmpdir) "sift.sock"))
 
 (defn open-references
   []
