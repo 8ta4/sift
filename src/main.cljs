@@ -57,7 +57,7 @@
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
-    (request "nvim_buf_set_keymap" (.-id buffer) "n" "s" ":See<CR>" {:silent true})
+    (request "nvim_buf_set_keymap" (.-id buffer) "n" "s" ":<C-U>See<CR>" {:silent true})
     (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
                (clj->js (if (existsSync path)
