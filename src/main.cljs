@@ -63,8 +63,10 @@
     (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
                (clj->js (if (existsSync path)
-                          (map render-item
-                               (read-string (slurp path)))
+                          (->> path
+                               slurp
+                               read-string
+                               (map render-item))
                           []))
                (clj->js {:start 0 :end -1}))
     (.setOption buffer "modifiable" false)))
