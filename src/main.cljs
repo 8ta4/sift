@@ -3,6 +3,7 @@
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
             [fs :refer [existsSync]]
+            [net :refer [createConnection]]
             [os :refer [tmpdir]]
             [path :refer [join]]
             [promesa.core :as promesa]))
@@ -82,9 +83,12 @@
 (defn open-references
   []
   (promesa/let [references (get-references)
-                line (.getLine (:nvim @state))]
-    {:references references
-     :text (subs line 4)}))
+                line (.getLine (:nvim @state))
+                socket (createConnection socket-path)]
+    (.on socket "connect" (fn []
+                            (.write socket (pr-str {:references references
+                                                    :text (subs line 4)}))
+                            (.end socket)))))
 
 (defn handle
   [key-name]
