@@ -48,10 +48,16 @@
   [plugin command-name handle options]
   (.registerCommand plugin command-name #(apply handle (js->clj % :keywordize-keys true)) (clj->js options)))
 
+(defn request
+  [function & args]
+  (.then (.request (:nvim @state) function (clj->js args))
+         #(js->clj % :keywordize-keys true)))
+
 (defn load
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
+    (request "nvim_buf_set_keymap" (.-id buffer) "n" "s" ":See<CR>" {:silent true})
     (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
                (clj->js (if (existsSync path)
@@ -66,9 +72,13 @@
   (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
     (js->clj references :keywordize-keys true)))
 
+(defn see
+  [])
+
 (defn main
   [plugin]
   (reset! state {:nvim (.-nvim plugin)})
   (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
                                                        :sync true}))
-  (register-command plugin "Sift" sift {:nargs 1}))
+  (register-command plugin "Sift" sift {:nargs 1})
+  (register-command plugin "See" see {}))
