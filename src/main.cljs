@@ -48,10 +48,18 @@
   [plugin command-name handle options]
   (.registerCommand plugin command-name #(apply handle (js->clj % :keywordize-keys true)) (clj->js options)))
 
+(defn request
+  [function & args]
+  (.then (.request (:nvim @state) function (clj->js args))
+         #(js->clj % :keywordize-keys true)))
+
 (defn load
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
+    ;; We use <C-U> to clear any range automatically added when a count is given (e.g., "1s").
+    ;; Without it, running a command with a count triggers "E481: No range allowed".
+    (request "nvim_buf_set_keymap" (.-id buffer) "n" "s" ":<C-U>See<CR>" {:silent true})
     (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
                (clj->js (if (existsSync path)
@@ -61,9 +69,18 @@
                (clj->js {:start 0 :end -1}))
     (.setOption buffer "modifiable" false)))
 
+(defn get-references
+  []
+  (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
+    (js->clj references :keywordize-keys true)))
+
+(defn see
+  [])
+
 (defn main
   [plugin]
   (reset! state {:nvim (.-nvim plugin)})
   (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
                                                        :sync true}))
-  (register-command plugin "Sift" sift {:nargs 1}))
+  (register-command plugin "Sift" sift {:nargs 1})
+  (register-command plugin "See" see {}))

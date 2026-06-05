@@ -16,13 +16,13 @@
 
    ```lua
    {
-     "8ta4/sift",
-     build = "./install.sh",
-     opts = {
-       references = {
-         "https://en.wiktionary.org/wiki/%s",
-       },
-     },
+   	"8ta4/sift",
+   	build = "./install.sh",
+   	opts = {
+   		references = {
+   			"https://en.wiktionary.org/wiki/%s",
+   		},
+   	},
    }
    ```
 
@@ -72,14 +72,14 @@ Yes. Put another reference in your `lazy.nvim` setup:
 
 ```lua
 {
-  "8ta4/sift",
-  build = "./install.sh",
-  opts = {
-    references = {
-      "https://en.wiktionary.org/wiki/%s",
-      "https://www.google.com/search?q=%s&udm=2",
-    },
-  },
+	"8ta4/sift",
+	build = "./install.sh",
+	opts = {
+		references = {
+			"https://en.wiktionary.org/wiki/%s",
+			"https://www.google.com/search?q=%s&udm=2",
+		},
+	},
 }
 ```
 
