@@ -61,6 +61,11 @@
                (clj->js {:start 0 :end -1}))
     (.setOption buffer "modifiable" false)))
 
+(defn get-references
+  []
+  (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
+    (js->clj references :keywordize-keys true)))
+
 (defn main
   [plugin]
   (reset! state {:nvim (.-nvim plugin)})
