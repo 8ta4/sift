@@ -74,8 +74,17 @@
   (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
     (js->clj references :keywordize-keys true)))
 
+(defn open-references
+  []
+  (promesa/let [references (get-references)
+                line (.getLine (:nvim @state))]
+    {:references references
+     :text (subs line 4)}))
+
 (defn handle
-  [key-name])
+  [key-name]
+  (if (= "s" key-name)
+    (open-references)))
 
 (defn main
   [plugin]
