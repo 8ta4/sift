@@ -57,6 +57,8 @@
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
+    ;; We use <C-U> to clear any range automatically added when a count is given (e.g., "1s").
+    ;; Without it, running a command with a count triggers "E481: No range allowed".
     (request "nvim_buf_set_keymap" (.-id buffer) "n" "s" ":<C-U>See<CR>" {:silent true})
     (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
