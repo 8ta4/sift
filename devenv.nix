@@ -30,7 +30,9 @@
   scripts.hello.exec = ''
     echo hello from $GREET
   '';
-  scripts.release.exec = "shadow-cljs release main";
+  scripts.release.exec = ''
+    cd "$DEVENV_ROOT/cljs" && shadow-cljs release main
+  '';
   scripts.run.exec = "nvim demo.sift";
   scripts.watch.exec = ''
     nvim +star "+te tail -F node.log -n +1"
@@ -41,10 +43,11 @@
     hello         # Run scripts directly
     git --version # Use packages
     brew bundle
-    npm i
-    export PATH="$DEVENV_ROOT/node_modules/.bin:$PATH"
+    export PATH="$DEVENV_ROOT/cljs/node_modules/.bin:$PATH"
     export NVIM_NODE_LOG_FILE="$DEVENV_ROOT/node.log"
     export NVIM_NODE_LOG_LEVEL=info
+    cd "$DEVENV_ROOT/cljs" && npm i
+    cd "$DEVENV_ROOT"
   '';
 
   # https://devenv.sh/tasks/
