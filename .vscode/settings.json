@@ -8,7 +8,7 @@
         "cljsLaunchBuilds": [":main"]
       },
       "name": "main",
-      "projectRootPath": ["."],
+      "projectRootPath": ["cljs"],
       "projectType": "shadow-cljs"
     }
   ]
