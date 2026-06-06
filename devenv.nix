@@ -47,6 +47,7 @@
     export NVIM_NODE_LOG_FILE="$DEVENV_ROOT/node.log"
     export NVIM_NODE_LOG_LEVEL=info
     cd "$DEVENV_ROOT/cljs" && npm i
+    cd "$DEVENV_ROOT"
   '';
 
   # https://devenv.sh/tasks/
