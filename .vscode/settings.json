@@ -10,6 +10,11 @@
       "name": "main",
       "projectRootPath": ["cljs"],
       "projectType": "shadow-cljs"
+    },
+    {
+      "name": "build",
+      "projectRootPath": ["cljs"],
+      "projectType": "deps.edn"
     }
   ]
 }
