@@ -80,7 +80,7 @@
 (def socket-path
   (join (tmpdir) "sift.sock"))
 
-(defn open-references
+(defn see
   []
   (promesa/let [references (get-references)
                 line (.getLine (:nvim @state))
@@ -93,7 +93,7 @@
 (defn handle
   [key-name]
   (if (= "s" key-name)
-    (open-references)))
+    (see)))
 
 (defn main
   [plugin]
