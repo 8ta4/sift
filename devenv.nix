@@ -9,11 +9,13 @@
 
   # https://devenv.sh/packages/
   packages = [
+    pkgs.ghcid
     pkgs.git
     pkgs.gitleaks
     pkgs.nil
     pkgs.pre-commit
     pkgs.rubyPackages.solargraph
+    pkgs.web-ext
   ];
 
   # https://devenv.sh/languages/
@@ -27,6 +29,12 @@
   # services.postgres.enable = true;
 
   # https://devenv.sh/scripts/
+  # https://github.com/mozilla-firefox/firefox/blob/a7628a666be5c4e35430780ff228dc185cbd8533/modules/libpref/init/all.js#L3158
+  scripts.browse.exec = ''
+    cd "$DEVENV_ROOT/cljs/public" && web-ext run --devtools \
+    --pref devtools.toolbox.alwaysOnTop=false \
+    --pref extensions.webextensions.base-content-security-policy.v3-with-localhost="script-src 'self' 'wasm-unsafe-eval' http://localhost:* http://127.0.0.1:* 'unsafe-eval';"
+  '';
   scripts.hello.exec = ''
     echo hello from $GREET
   '';
@@ -34,8 +42,21 @@
     cd "$DEVENV_ROOT/cljs" && shadow-cljs release main
   '';
   scripts.run.exec = "nvim demo.sift";
-  scripts.watch.exec = ''
+  scripts.log.exec = ''
     nvim +star "+te tail -F node.log -n +1"
+  '';
+  # ':set -Wprepositive-qualified-module' command works around a ghcid crash related to the `-Wprepositive-qualified-module` warning.
+  # The warning can be triggered by GHCi's internal startup process, causing a crash if enabled from the start.
+  # The fix is to disable the warning during initial GHCi loading in a .ghci file with `:set -Wno-prepositive-qualified-module`
+  # and then use this ghcid command to re-enable it after ghcid has successfully started.
+  # The trade-off is that the initial module load is not checked for this specific warning.
+  scripts.watch.exec = ''
+    cd "$DEVENV_ROOT/hs" && ghcid -a \
+    -c 'stack ghci --ghci-options "-ghci-script load.ghci" --no-load ' \
+    --no-height-limit \
+    -r \
+    -s ':set -Wprepositive-qualified-module' \
+    -W
   '';
 
   # https://devenv.sh/basics/
@@ -43,12 +64,16 @@
     hello         # Run scripts directly
     git --version # Use packages
     brew bundle
-    ghcup install stack 3.7.1
     export PATH="$DEVENV_ROOT/cljs/node_modules/.bin:$PATH"
+    cd "$DEVENV_ROOT/cljs" && npm i
+    export PATH="$HOME/.ghcup/bin:$PATH"
+    ghcup install hls 2.13.0.0
+    ghcup install stack 3.7.1
+    ghcup set ghc 9.6.7
+    cd "$DEVENV_ROOT/hs" && stack run
+    cd "$DEVENV_ROOT"
     export NVIM_NODE_LOG_FILE="$DEVENV_ROOT/node.log"
     export NVIM_NODE_LOG_LEVEL=info
-    cd "$DEVENV_ROOT/cljs" && npm i
-    cd "$DEVENV_ROOT"
   '';
 
   # https://devenv.sh/tasks/
@@ -77,6 +102,7 @@
     lua-ls.enable = true;
     # https://github.com/NixOS/nixfmt/blob/1d1bf077b9a6e675e7558db04b4c553e21858253/README.md?plain=1#L165
     nixfmt.enable = true;
+    ormolu.enable = true;
     prettier.enable = true;
     stylua.enable = true;
     trim-trailing-whitespace.enable = true;
