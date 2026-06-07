@@ -40,5 +40,6 @@ pom.xml.asc
 .hg/
 
 # sift
-rplugin
 public
+release
+rplugin

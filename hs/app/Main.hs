@@ -1,22 +1,46 @@
 module Main (main) where
 
-import Data.Aeson (Value (Object), encode, (.=))
+import Data.Aeson (Object, Value (Object), encode, object, (.=))
 import Data.Aeson.KeyMap qualified as KeyMap
 import Relude
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (takeDirectory)
 
 main :: IO ()
-main = writeManifest "../cljs/public/manifest.json"
+main = do
+  writeManifest "../cljs/public/manifest.json" firefox
+  writeManifest "../cljs/release/manifest.json" chrome
 
-writeManifest :: FilePath -> IO ()
-writeManifest path = do
+writeManifest :: FilePath -> Object -> IO ()
+writeManifest path config = do
   createDirectoryIfMissing True $ takeDirectory path
-  writeFileLBS path
-    $ encode
-    $ Object
-    $ KeyMap.fromList
-      [ "manifest_version" .= (3 :: Int),
-        "name" .= ("sift" :: Text),
-        "version" .= ("0.1.0" :: Text)
-      ]
+  writeFileLBS path $ encode $ Object $ config <> base
+
+base :: Object
+base =
+  KeyMap.fromList
+    [ "manifest_version" .= (3 :: Int),
+      "name" .= ("see" :: Text),
+      "permissions" .= ["nativeMessaging" :: Text],
+      "version" .= ("0.1.0" :: Text)
+    ]
+
+firefox :: Object
+firefox =
+  KeyMap.fromList
+    [ "background"
+        .= object
+          [ "scripts" .= ["js/background.js" :: Text],
+            "type" .= ("module" :: Text)
+          ]
+    ]
+
+chrome :: Object
+chrome =
+  KeyMap.fromList
+    [ "background"
+        .= object
+          [ "service_worker" .= ("js/background.js" :: Text),
+            "type" .= ("module" :: Text)
+          ]
+    ]
