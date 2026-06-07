@@ -1,0 +1,9 @@
+# https://github.com/haskell/hie-bios/blob/a80d490c714f6614c404dfc919f6e9abf301a691/README.md?plain=1#L81-L83
+cradle:
+  stack:
+    stackYaml: "hs/stack.yaml"
+    components:
+      - path: "hs/app"
+        component: "hs:exe:hs-exe"
+      - path: "hs/test"
+        component: "hs:test:hs-test"
