@@ -43,6 +43,7 @@
     hello         # Run scripts directly
     git --version # Use packages
     brew bundle
+    ghcup install stack 3.7.1
     export PATH="$DEVENV_ROOT/cljs/node_modules/.bin:$PATH"
     export NVIM_NODE_LOG_FILE="$DEVENV_ROOT/node.log"
     export NVIM_NODE_LOG_LEVEL=info
