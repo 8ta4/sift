@@ -36,4 +36,10 @@ firefox =
 
 chrome :: Object
 chrome =
-  KeyMap.fromList []
+  KeyMap.fromList
+    [ "background"
+        .= object
+          [ "service_worker" .= ("js/background.js" :: Text),
+            "type" .= ("module" :: Text)
+          ]
+    ]
