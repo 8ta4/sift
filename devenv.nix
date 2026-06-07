@@ -43,11 +43,13 @@
     hello         # Run scripts directly
     git --version # Use packages
     brew bundle
+    export PATH="$DEVENV_ROOT/cljs/node_modules/.bin:$PATH"
+    cd "$DEVENV_ROOT/cljs" && npm i
     # https://github.com/NixOS/nixpkgs/issues/227966#issuecomment-1521073421
     export PATH="$HOME/.ghcup/bin:$PATH"
     ghcup install stack 3.7.1
-    export PATH="$DEVENV_ROOT/cljs/node_modules/.bin:$PATH"
-    cd "$DEVENV_ROOT/cljs" && npm i
+    ghcup set ghc 9.6.7
+    cd "$DEVENV_ROOT/hs" && stack run
     cd "$DEVENV_ROOT"
     export NVIM_NODE_LOG_FILE="$DEVENV_ROOT/node.log"
     export NVIM_NODE_LOG_LEVEL=info
