@@ -11,4 +11,7 @@
  {:main {:build-hooks [(build/build)]
          :exports {:default main/main}
          :output-to "rplugin/node/main.js"
-         :target :node-library}}}
+         :target :node-library}
+  :background {:modules {:background {}}
+               :output-dir "public/js"
+               :target :esm}}}
