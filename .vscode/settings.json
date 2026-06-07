@@ -10,7 +10,7 @@
       "cljsType": "shadow-cljs",
       "menuSelections": {
         "cljsDefaultBuild": ":main",
-        "cljsLaunchBuilds": [":main"]
+        "cljsLaunchBuilds": [":background", ":main"]
       },
       "name": "main",
       "projectRootPath": ["cljs"],
