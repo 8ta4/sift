@@ -41,7 +41,7 @@
     echo hello from $GREET
   '';
   scripts.release.exec = ''
-    cd "$DEVENV_ROOT/cljs" && shadow-cljs release main
+    cd "$DEVENV_ROOT/cljs" && rm -rf rplugin && shadow-cljs release main
   '';
   scripts.run.exec = "nvim demo.sift";
   scripts.log.exec = ''
