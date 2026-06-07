@@ -15,6 +15,7 @@
     pkgs.nil
     pkgs.pre-commit
     pkgs.rubyPackages.solargraph
+    pkgs.web-ext
   ];
 
   # https://devenv.sh/languages/
@@ -28,6 +29,14 @@
   # services.postgres.enable = true;
 
   # https://devenv.sh/scripts/
+  # https://github.com/mozilla-firefox/firefox/blob/a7628a666be5c4e35430780ff228dc185cbd8533/modules/libpref/init/all.js#L3157
+  # https://github.com/mozilla-firefox/firefox/blob/a7628a666be5c4e35430780ff228dc185cbd8533/modules/libpref/init/all.js#L3160
+  scripts.browse.exec = ''
+    cd "$DEVENV_ROOT/cljs/public" && web-ext run --devtools \
+    --pref devtools.toolbox.alwaysOnTop=false \
+    --pref extensions.webextensions.base-content-security-policy.v3="script-src 'self' 'wasm-unsafe-eval' 'unsafe-eval';" \
+    --pref extensions.webextensions.default-content-security-policy.v3="script-src 'self' 'unsafe-eval'; upgrade-insecure-requests;"
+  '';
   scripts.hello.exec = ''
     echo hello from $GREET
   '';
