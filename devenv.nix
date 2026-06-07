@@ -59,7 +59,6 @@
     brew bundle
     export PATH="$DEVENV_ROOT/cljs/node_modules/.bin:$PATH"
     cd "$DEVENV_ROOT/cljs" && npm i
-    # https://github.com/NixOS/nixpkgs/issues/227966#issuecomment-1521073421
     export PATH="$HOME/.ghcup/bin:$PATH"
     ghcup install hls 2.13.0.0
     ghcup install stack 3.7.1
