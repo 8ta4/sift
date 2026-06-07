@@ -26,8 +26,6 @@
    }
    ```
 
-1. Install the Chrome extension.
-
 1. Open a terminal.
 
 1. Run the following commands:
@@ -37,6 +35,8 @@
    npm install -g neovim
    nvim --headless "+Lazy load sift" +UpdateRemotePlugins +qa!
    ```
+
+1. Install the Chrome extension.
 
 ## Usage
 
