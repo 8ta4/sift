@@ -1,0 +1,4 @@
+(ns background)
+
+(defn init
+  [])
