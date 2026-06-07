@@ -1,7 +1,11 @@
 module Main (main) where
 
-import Lib
 import Relude
+import System.Directory (createDirectoryIfMissing)
+import System.FilePath (takeDirectory)
 
 main :: IO ()
-main = someFunc
+main = writeManifest "../cljs/public/manifest.json"
+
+writeManifest :: FilePath -> IO ()
+writeManifest path = createDirectoryIfMissing True $ takeDirectory path
