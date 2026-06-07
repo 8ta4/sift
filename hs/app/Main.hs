@@ -21,6 +21,7 @@ base =
   KeyMap.fromList
     [ "manifest_version" .= (3 :: Int),
       "name" .= ("see" :: Text),
+      "permissions" .= ["nativeMessaging" :: Text],
       "version" .= ("0.1.0" :: Text)
     ]
 
