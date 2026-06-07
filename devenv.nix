@@ -82,6 +82,7 @@
     lua-ls.enable = true;
     # https://github.com/NixOS/nixfmt/blob/1d1bf077b9a6e675e7558db04b4c553e21858253/README.md?plain=1#L165
     nixfmt.enable = true;
+    ormolu.enable = true;
     prettier.enable = true;
     stylua.enable = true;
     trim-trailing-whitespace.enable = true;
