@@ -6,3 +6,6 @@ brew 'neovim'
 # We use Homebrew's Neovim instead of `languages.javascript.npm.enable`
 # The Nix Neovim package triggers "Vim(echoerr):Cannot find the "neovim" node package. Try :checkhealth".
 brew 'node'
+
+cask 'firefox'
+cask 'google-chrome'
