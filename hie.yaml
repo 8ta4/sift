@@ -5,5 +5,7 @@ cradle:
     components:
       - path: "hs/app"
         component: "hs:exe:hs-exe"
+      - path: "hs/src"
+        component: "hs:lib"
       - path: "hs/test"
         component: "hs:test:hs-test"
