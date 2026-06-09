@@ -40,6 +40,9 @@
   scripts.hello.exec = ''
     echo hello from $GREET
   '';
+  scripts.install.exec = ''
+    cd "$DEVENV_ROOT/hs" && stack install
+  '';
   scripts.release.exec = ''
     cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf rplugin && shadow-cljs release main
   '';
