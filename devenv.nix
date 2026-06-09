@@ -43,7 +43,9 @@
   scripts.release.exec = ''
     cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf rplugin && shadow-cljs release main
   '';
-  scripts.run.exec = "nvim demo.sift";
+  scripts.run.exec = ''
+    nvim "$DEVENV_ROOT/demo.sift"
+  '';
   scripts.log.exec = ''
     nvim +star "+te tail -F node.log -n +1"
   '';
