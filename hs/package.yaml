@@ -27,6 +27,10 @@ dependencies:
   - relude
 
 ghc-options:
+  # https://github.com/commercialhaskell/stack-templates/blob/360442dbdc3d114df5fe377306978d4f47694370/new-template.hsfiles#L45-L47
+  - -threaded
+  - -rtsopts
+  - -with-rtsopts=-N
   # https://github.com/purescript/purescript/blob/c4a35b34b99af5feaa706ca0dadcb568788aff33/purescript.cabal#L57-L89
   # This list taken from https://medium.com/mercury-bank/enable-all-the-warnings-a0517bc081c3
   # Enable all warnings with -Weverything, then disable the ones we don’t care about
@@ -95,27 +99,24 @@ default-extensions:
   - TypeFamilies
   - ViewPatterns
 
-library:
-  source-dirs: src
+source-dirs: app
 
+# We avoid using a library component to work around two Haskell Language Server (HLS)
+# issues that arise with multi-component projects:
+# 1. Cross-component refactoring: Renaming an exported identifier in the library
+#    component does not automatically update its usages in the executable component.
+# 2. Stale information: HLS does not reflect changes made in the library component
+#    within the executable component until the library is recompiled and HLS is
+#    restarted.
+# By defining all modules under a single component, we ensure that HLS can track
+# changes and perform refactoring correctly across the entire codebase.
 executables:
-  hs-exe:
-    main: Main.hs
-    source-dirs: app
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - hs
+  build:
+    main: Build
+  host:
+    main: Host
 
 tests:
-  hs-test:
+  test:
     main: Spec.hs
     source-dirs: test
-    ghc-options:
-      - -threaded
-      - -rtsopts
-      - -with-rtsopts=-N
-    dependencies:
-      - hs

@@ -1,4 +1,4 @@
-module Main (main) where
+module Build (main) where
 
 import Data.Aeson (Object, Value (Object), encode, object, (.=))
 import Data.Aeson.KeyMap qualified as KeyMap

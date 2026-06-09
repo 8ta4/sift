@@ -1,10 +1,10 @@
 (ns main
-  (:require [cljs-node-io.core :refer [slurp spit]]
+  (:require [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
-            [os :refer [tmpdir]]
+            [os :refer [homedir tmpdir]]
             [path :refer [join]]
             [promesa.core :as promesa]))
 
@@ -94,6 +94,22 @@
   [key-name]
   (if (= "s" key-name)
     (see)))
+
+(def chrome-hosts-directory
+  ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
+  (join (homedir) "Library/Application Support/Google/Chrome/NativeMessagingHosts"))
+
+(def firefox-hosts-directory
+  ; https://github.com/mdn/content/blob/d45b7a7d45dac4a0012c138aba7afedc0f9e570c/files/en-us/mozilla/add-ons/webextensions/native_manifests/index.md?plain=1#L412
+  (join (homedir) "Library/Application Support/Mozilla/NativeMessagingHosts"))
+
+(def filename
+  "host")
+
+(defn write-manifest
+  [directory manifest]
+  (make-parents (join directory filename))
+  (spit (join directory filename) (js/JSON.stringify (clj->js manifest))))
 
 (defn main
   [plugin]
