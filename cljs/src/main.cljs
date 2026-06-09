@@ -1,8 +1,8 @@
 (ns main
-  (:require [cljs-node-io.core :refer [make-parents slurp spit]]
+  (:require [app-root-path]
+            [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
-            [environ.core :refer [env]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
             [os :refer [homedir tmpdir]]
@@ -108,9 +108,7 @@
   "host")
 
 (def host-path
-; TODO
-  (if (env :devenv-root)
-    (join (env :devenv-root) "hs/bin" host-filename)))
+  (join (.toString app-root-path) "hs/bin" host-filename))
 
 (defn write-manifest
   [directory manifest]

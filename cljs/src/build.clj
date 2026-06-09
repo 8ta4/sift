@@ -12,7 +12,7 @@
 (defn configure-plugin
   []
   (create-dirs plugins-directory)
-  (spit plugin-file (string/replace (slurp "template.lua") "{{dir}}" (str (System/getenv "DEVENV_ROOT") "/cljs"))))
+  (spit plugin-file (string/replace (slurp "template.lua") "{{dir}}" (System/getenv "DEVENV_ROOT"))))
 
 (defn build
   {:shadow.build/stage :flush}

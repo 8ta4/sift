@@ -44,7 +44,7 @@
     cd "$DEVENV_ROOT/hs" && stack install
   '';
   scripts.release.exec = ''
-    cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf rplugin && shadow-cljs release main
+    cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf ../rplugin && shadow-cljs release main
   '';
   scripts.run.exec = ''
     nvim "$DEVENV_ROOT/demo.sift"
@@ -79,8 +79,8 @@
     hello         # Run scripts directly
     git --version # Use packages
     brew bundle
-    export PATH="$DEVENV_ROOT/cljs/node_modules/.bin:$PATH"
-    cd "$DEVENV_ROOT/cljs" && npm i
+    export PATH="$DEVENV_ROOT/node_modules/.bin:$PATH"
+    npm i
     export PATH="$HOME/.ghcup/bin:$PATH"
     ghcup install hls 2.13.0.0
     ghcup install stack 3.7.1
