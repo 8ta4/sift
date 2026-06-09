@@ -1,7 +1,7 @@
 module Host (main) where
 
-import Control.Exception (catch, throwIO)
-import Network.Socket (Family (AF_UNIX), SockAddr (SockAddrUnix), SocketType (Stream), bind, defaultProtocol, socket)
+import Control.Exception (bracket, catch, throwIO)
+import Network.Socket (Family (AF_UNIX), SockAddr (SockAddrUnix), Socket, SocketType (Stream), accept, bind, close, defaultProtocol, listen, socket)
 import Relude
 import System.Directory (getTemporaryDirectory, removeFile)
 import System.FilePath ((</>))
@@ -13,6 +13,8 @@ main = do
   removeIfExists socketPath
   unixSocket <- socket AF_UNIX Stream defaultProtocol
   bind unixSocket $ SockAddrUnix socketPath
+  listen unixSocket 1
+  forever $ bracket (fst <$> accept unixSocket) close serveClient
 
 getSocketPath :: IO FilePath
 getSocketPath = do
@@ -26,3 +28,6 @@ removeIfExists fileName = removeFile fileName `catch` handleExists
     handleExists e
       | isDoesNotExistError e = pure ()
       | otherwise = throwIO e
+
+serveClient :: Socket -> IO ()
+serveClient socket = pure ()
