@@ -50,10 +50,10 @@
     cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf ../rplugin && shadow-cljs release main
   '';
   scripts.run.exec = ''
-    nvim "$DEVENV_ROOT/demo.sift"
+    cd "$DEVENV_ROOT" && nvim demo.sift
   '';
   scripts.log.exec = ''
-    nvim +star "+te tail -F node.log -n +1"
+    cd "$DEVENV_ROOT" && nvim +star "+te tail -F node.log -n +1"
   '';
   # ':set -Wprepositive-qualified-module' command works around a ghcid crash related to the `-Wprepositive-qualified-module` warning.
   # The warning can be triggered by GHCi's internal startup process, causing a crash if enabled from the start.
