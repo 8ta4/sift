@@ -130,4 +130,5 @@
   (register-command plugin "Sift" sift {:nargs 1})
   (register-command plugin "Handle" handle {:nargs 1
                                             :range ""})
+  (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://aobaoadfgfpeggekafmdlmgdondfnpdo"]})
   (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))
