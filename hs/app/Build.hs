@@ -32,6 +32,13 @@ firefox =
         .= object
           [ "scripts" .= ["js/background.js" :: Text],
             "type" .= ("module" :: Text)
+          ],
+      "browser_specific_settings"
+        .= object
+          [ "gecko"
+              .= object
+                [ "id" .= ("@sift" :: Text)
+                ]
           ]
     ]
 
