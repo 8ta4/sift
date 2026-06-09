@@ -2,6 +2,7 @@
   (:require [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
+            [environ.core :refer [env]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
             [os :refer [homedir tmpdir]]
@@ -96,20 +97,32 @@
     (see)))
 
 (def chrome-hosts-directory
-  ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
+; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
   (join (homedir) "Library/Application Support/Google/Chrome/NativeMessagingHosts"))
 
 (def firefox-hosts-directory
-  ; https://github.com/mdn/content/blob/d45b7a7d45dac4a0012c138aba7afedc0f9e570c/files/en-us/mozilla/add-ons/webextensions/native_manifests/index.md?plain=1#L412
+; https://github.com/mdn/content/blob/d45b7a7d45dac4a0012c138aba7afedc0f9e570c/files/en-us/mozilla/add-ons/webextensions/native_manifests/index.md?plain=1#L412
   (join (homedir) "Library/Application Support/Mozilla/NativeMessagingHosts"))
 
-(def filename
+(def host-filename
   "host")
+
+(def host-path
+; TODO
+  (if (env :devenv-root)
+    (join (env :devenv-root) "hs/bin" host-filename)))
 
 (defn write-manifest
   [directory manifest]
-  (make-parents (join directory filename))
-  (spit (join directory filename) (js/JSON.stringify (clj->js manifest))))
+  (make-parents (join directory host-filename))
+  (->> {:description "Native messaging host for the sift Neovim plugin"
+        :name host-filename
+        :path host-path
+        :type "stdio"}
+       (merge manifest)
+       clj->js
+       js/JSON.stringify
+       (spit (join directory (str host-filename ".json")))))
 
 (defn main
   [plugin]
@@ -118,4 +131,5 @@
                                                        :sync true}))
   (register-command plugin "Sift" sift {:nargs 1})
   (register-command plugin "Handle" handle {:nargs 1
-                                            :range ""}))
+                                            :range ""})
+  (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))
