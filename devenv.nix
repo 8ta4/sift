@@ -37,11 +37,14 @@
     --pref extensions.webextensions.base-content-security-policy.v3-with-localhost="script-src 'self' 'wasm-unsafe-eval' http://localhost:* http://127.0.0.1:* 'unsafe-eval';" \
     --pref extensions.webextensions.default-content-security-policy.v3="script-src 'self' 'unsafe-eval';"
   '';
+  # Avoid naming this script 'install'.
+  # Doing so can shadow the standard system 'install' utility in the PATH.
+  # This conflict can cause CI runs to time out.
+  scripts.build.exec = ''
+    cd "$DEVENV_ROOT/hs" && stack install
+  '';
   scripts.hello.exec = ''
     echo hello from $GREET
-  '';
-  scripts.install.exec = ''
-    cd "$DEVENV_ROOT/hs" && stack install
   '';
   scripts.release.exec = ''
     cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf ../rplugin && shadow-cljs release main
