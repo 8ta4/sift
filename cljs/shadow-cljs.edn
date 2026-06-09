@@ -5,12 +5,12 @@
  :dependencies
  [[babashka/fs "0.5.33"]
   [com.github.pkpkpk/cljs-node-io "2.0.339"]
-  [environ "1.2.0"]
   [funcool/promesa "11.0.678"]]
 
  :builds
  {:main {:build-hooks [(build/build)]
          :exports {:default main/main}
+         :js-options {:js-package-dirs ["../node_modules"]}
          :output-to "../rplugin/node/main.js"
          :target :node-library}
 ; https://github.com/thheller/shadow-cljs/issues/902#:~:text=This%20fixed%20the,host%20false%7D
