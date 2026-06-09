@@ -40,7 +40,7 @@
   # Avoid naming this script 'install'.
   # Doing so can shadow the standard system 'install' utility in the PATH.
   # This conflict can cause CI runs to time out.
-  scripts.build.exec = ''
+  scripts.compile.exec = ''
     cd "$DEVENV_ROOT/hs" && stack install
   '';
   scripts.hello.exec = ''
