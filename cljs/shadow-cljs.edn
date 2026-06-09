@@ -12,7 +12,7 @@
          :exports {:default main/main}
          :output-to "rplugin/node/main.js"
          :target :node-library}
-  ; https://github.com/thheller/shadow-cljs/issues/902#:~:text=This%20fixed%20the,host%20false%7D
+; https://github.com/thheller/shadow-cljs/issues/902#:~:text=This%20fixed%20the,host%20false%7D
   :background {:devtools {:use-document-host false}
                :modules {:background {:init-fn background/init}}
                :output-dir "public/js"
