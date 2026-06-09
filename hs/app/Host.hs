@@ -1,6 +1,7 @@
 module Host (main) where
 
 import Control.Exception (catch, throwIO)
+import Network.Socket (Family (AF_UNIX), SockAddr (SockAddrUnix), SocketType (Stream), bind, defaultProtocol, socket)
 import Relude
 import System.Directory (getTemporaryDirectory, removeFile)
 import System.FilePath ((</>))
@@ -10,6 +11,8 @@ main :: IO ()
 main = do
   socketPath <- getSocketPath
   removeIfExists socketPath
+  unixSocket <- socket AF_UNIX Stream defaultProtocol
+  bind unixSocket $ SockAddrUnix socketPath
 
 getSocketPath :: IO FilePath
 getSocketPath = do
