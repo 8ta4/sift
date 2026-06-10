@@ -1,5 +1,5 @@
 (ns background
-  (:require [com.rpl.specter :refer [ATOM setval]]
+  (:require [com.rpl.specter :refer [ATOM MAP-VALS NONE setval]]
             [goog.string :refer [format]]
             [promesa.core :as promesa]))
 
@@ -23,4 +23,5 @@
 
 (defn init
   []
-  (.addListener port.onMessage handle-host))
+  (.addListener port.onMessage handle-host)
+  (js/chrome.windows.onRemoved.addListener #(setval [ATOM MAP-VALS (partial = %)] NONE state)))
