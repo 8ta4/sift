@@ -1,5 +1,5 @@
 (ns background
-  (:require [com.rpl.specter :refer [ATOM setval]]
+  (:require [com.rpl.specter :refer [ATOM MAP-VALS NONE setval]]
             [goog.string :refer [format]]
             [promesa.core :as promesa]))
 
@@ -11,8 +11,21 @@
 
 (defn browse
   [text reference]
-  (promesa/let [window (js/chrome.windows.create (clj->js {:url (format reference text)}))]
-    (setval [ATOM reference] (.-id window) state)))
+  (if-let [id (@state reference)]
+    (promesa/let [active-tabs (js/chrome.tabs.query (clj->js {:windowId id
+                                                              :active true}))
+                  inactive-tabs (js/chrome.tabs.query (clj->js {:windowId id
+                                                                :active false}))]
+      (-> active-tabs
+          (js->clj :keywordize-keys true)
+          first
+          :id
+          (js/chrome.tabs.update (clj->js {:url (format reference text)})))
+      (run! (comp js/chrome.tabs.remove
+                  :id)
+            (js->clj inactive-tabs :keywordize-keys true)))
+    (promesa/let [window (js/chrome.windows.create (clj->js {:url (format reference text)}))]
+      (setval [ATOM reference] (.-id window) state))))
 
 (defn handle-host
   [message]
@@ -23,4 +36,5 @@
 
 (defn init
   []
-  (.addListener port.onMessage handle-host))
+  (.addListener port.onMessage handle-host)
+  (js/chrome.windows.onRemoved.addListener #(setval [ATOM MAP-VALS (partial = %)] NONE state)))
