@@ -140,13 +140,13 @@ No. The item remains visible for the following reasons:
 
 ### Saving
 
-> If I mark an item and Neovim crashes before I save, does `sift` keep recovery logs?
+> After I save and close a buffer, does `sift` retain my undo history?
 
 Yes.
 
-> Where does `sift` store recovery logs?
+> If I mark an item and Neovim crashes before I save, does `sift` keep recovery logs?
 
-`sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
+Yes. `sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
 
 Storing logs here stops your working directory from getting messy. To figure out the exact path on your machine, run:
 
