@@ -81,13 +81,23 @@
 (def socket-path
   (join (tmpdir) "sift.sock"))
 
+(defn encode
+  [message]
+  (let [payload (-> message
+                    clj->js
+                    js/JSON.stringify
+                    js/Buffer.from)
+        header (js/Buffer.alloc 4)]
+    (.writeUInt32LE header (.-length payload))
+    (js/Buffer.concat (clj->js [header payload]))))
+
 (defn see
   []
   (promesa/let [references (get-references)
                 line (.getLine (:nvim @state))
                 socket (createConnection socket-path)]
     (.on socket "connect" (fn []
-                            (.write socket (pr-str {:references references
+                            (.write socket (encode {:references references
                                                     :text (subs line 4)}))
                             (.end socket)))))
 
@@ -130,4 +140,5 @@
   (register-command plugin "Sift" sift {:nargs 1})
   (register-command plugin "Handle" handle {:nargs 1
                                             :range ""})
+  (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://aobaoadfgfpeggekafmdlmgdondfnpdo"]})
   (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))

@@ -49,5 +49,7 @@ chrome =
         .= object
           [ "service_worker" .= ("js/background.js" :: Text),
             "type" .= ("module" :: Text)
-          ]
+          ],
+      -- This public key ensures Chrome generates a consistent extension ID during development.
+      "key" .= ("0000" :: Text)
     ]

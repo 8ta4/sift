@@ -37,20 +37,23 @@
     --pref extensions.webextensions.base-content-security-policy.v3-with-localhost="script-src 'self' 'wasm-unsafe-eval' http://localhost:* http://127.0.0.1:* 'unsafe-eval';" \
     --pref extensions.webextensions.default-content-security-policy.v3="script-src 'self' 'unsafe-eval';"
   '';
+  # Avoid naming this script 'install'.
+  # Doing so can shadow the standard system 'install' utility in the PATH.
+  # This conflict can cause CI runs to time out.
+  scripts.compile.exec = ''
+    cd "$DEVENV_ROOT/hs" && stack install
+  '';
   scripts.hello.exec = ''
     echo hello from $GREET
-  '';
-  scripts.install.exec = ''
-    cd "$DEVENV_ROOT/hs" && stack install
   '';
   scripts.release.exec = ''
     cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf ../rplugin && shadow-cljs release main
   '';
   scripts.run.exec = ''
-    nvim "$DEVENV_ROOT/demo.sift"
+    cd "$DEVENV_ROOT" && nvim demo.sift
   '';
   scripts.log.exec = ''
-    nvim +star "+te tail -F node.log -n +1"
+    cd "$DEVENV_ROOT" && nvim +star "+te tail -F node.log -n +1"
   '';
   # ':set -Wprepositive-qualified-module' command works around a ghcid crash related to the `-Wprepositive-qualified-module` warning.
   # The warning can be triggered by GHCi's internal startup process, causing a crash if enabled from the start.
@@ -85,7 +88,7 @@
     ghcup install hls 2.13.0.0
     ghcup install stack 3.7.1
     ghcup set ghc 9.6.7
-    cd "$DEVENV_ROOT/hs" && stack run
+    cd "$DEVENV_ROOT/hs" && compile && stack run build
     cd "$DEVENV_ROOT"
     export NVIM_NODE_LOG_FILE="$DEVENV_ROOT/node.log"
     export NVIM_NODE_LOG_LEVEL=info
