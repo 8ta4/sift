@@ -83,7 +83,10 @@
 
 (defn encode
   [message]
-  (let [payload (js/Buffer.from (js/JSON.stringify (clj->js message)))
+  (let [payload (-> message
+                    clj->js
+                    js/JSON.stringify
+                    js/Buffer.from)
         header (js/Buffer.alloc 4)]
     (.writeUInt32LE header (.-length payload))
     (js/Buffer.concat (clj->js [header payload]))))
