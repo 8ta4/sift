@@ -1,13 +1,18 @@
 (ns background
-  (:require
-   [goog.string :refer [format]]))
+  (:require [com.rpl.specter :refer [ATOM setval]]
+            [goog.string :refer [format]]
+            [promesa.core :as promesa]))
 
 (defonce port
   (js/chrome.runtime.connectNative "host"))
 
+(defonce state
+  (atom {}))
+
 (defn browse
   [text reference]
-  (js/chrome.windows.create (clj->js {:url (format reference text)})))
+  (promesa/let [window (js/chrome.windows.create (clj->js {:url (format reference text)}))]
+    (setval [ATOM reference] (.-id window) state)))
 
 (defn handle-host
   [message]
