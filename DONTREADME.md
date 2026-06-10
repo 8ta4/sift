@@ -142,17 +142,17 @@ No. The item remains visible for the following reasons:
 
 > After I save and close a buffer, does `sift` retain my undo history?
 
-Yes.
+Yes. `sift` drops your undo history into `vim.fn.stdpath("state") .. "/sift/"`.
 
-> If I mark an item and Neovim crashes before I save, does `sift` keep recovery logs?
-
-Yes. `sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
-
-Storing logs here stops your working directory from getting messy. To figure out the exact path on your machine, run:
+Storing your undo history here stops your working directory from getting messy. To figure out the exact path on your machine, run:
 
 ```
 :lua print(vim.fn.stdpath("state") .. "/sift/")
 ```
+
+> If I mark an item and Neovim crashes before I save, does `sift` keep recovery logs?
+
+Yes. `sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
 
 > When I reopen a file, will `sift` reapply the same filters as before?
 
