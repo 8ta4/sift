@@ -1,7 +1,9 @@
 module Host (main) where
 
 import Control.Exception (bracket, catch, throwIO)
+import Data.ByteString.Lazy (hPut)
 import Network.Socket (Family (AF_UNIX), SockAddr (SockAddrUnix), Socket, SocketType (Stream), accept, bind, close, defaultProtocol, listen, socket)
+import Network.Socket.ByteString.Lazy (getContents)
 import Relude
 import System.Directory (getTemporaryDirectory, removeFile)
 import System.FilePath ((</>))
@@ -30,4 +32,7 @@ removeIfExists fileName = removeFile fileName `catch` handleExists
       | otherwise = throwIO e
 
 serveClient :: Socket -> IO ()
-serveClient socket = pure ()
+serveClient socket = do
+  contents <- getContents socket
+  hPut stdout contents
+  hFlush stdout
