@@ -81,13 +81,20 @@
 (def socket-path
   (join (tmpdir) "sift.sock"))
 
+(defn encode
+  [message]
+  (let [payload (js/Buffer.from (js/JSON.stringify (clj->js message)))
+        header (js/Buffer.alloc 4)]
+    (.writeUInt32LE header (.-length payload))
+    (js/Buffer.concat (clj->js [header payload]))))
+
 (defn see
   []
   (promesa/let [references (get-references)
                 line (.getLine (:nvim @state))
                 socket (createConnection socket-path)]
     (.on socket "connect" (fn []
-                            (.write socket (pr-str {:references references
+                            (.write socket (encode {:references references
                                                     :text (subs line 4)}))
                             (.end socket)))))
 
