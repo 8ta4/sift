@@ -22,7 +22,7 @@ No. `sift` hands that off to your browser. So latency depends on external factor
 
 > Is there a latency target for filtering?
 
-Yes. The goal is under 0.1 seconds for lists with up to one million items.
+Yes. The goal is under 0.1 seconds for lists with up to 100,000 items.
 
 [0.1 second is about the limit for having the user feel that the system is reacting instantaneously](https://www.nngroup.com/articles/response-times-3-important-limits/#:~:text=0.1%20second%20is%20about%20the%20limit%20for%20having%20the%20user%20feel%20that%20the%20system%20is%20reacting%20instantaneously).
 
