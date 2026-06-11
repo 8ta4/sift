@@ -3,7 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [AFTER-ELEM setval]]
+            [com.rpl.specter :refer [AFTER-ELEM FIRST setval transform]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
             [os :refer [homedir tmpdir]]
@@ -57,7 +57,7 @@
                        (apply f (js->clj args :keywordize-keys true)))
                       ([args range*]
                        (apply f (setval AFTER-ELEM
-                                        (js->clj range*)
+                                        (transform FIRST dec (js->clj range*))
                                         (js->clj args :keywordize-keys true)))))
                     (clj->js options)))
 
