@@ -30,13 +30,13 @@
         split-lines))
 
 (defn sift
-  [f]
+  [target]
   (promesa/let [s (call-function "getreg" ["+"])]
     (->> s
          parse
          pr-str
-         (spit (str f ".sift")))
-    (.command (:nvim @state) (str "e " f ".sift"))))
+         (spit (str target ".sift")))
+    (.command (:nvim @state) (str "e " target ".sift"))))
 
 (defn render-item
   [item]
