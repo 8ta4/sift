@@ -3,6 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
+            [com.rpl.specter :refer [AFTER-ELEM setval]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
             [os :refer [homedir tmpdir]]
@@ -51,8 +52,13 @@
 (defn register-command
   [plugin command-name f options]
   (.registerCommand plugin command-name
-                    (fn [& args]
-                      (apply f (mapcat #(js->clj % :keywordize-keys true) args)))
+                    (fn
+                      ([args]
+                       (apply f (js->clj args :keywordize-keys true)))
+                      ([args range*]
+                       (apply f (setval AFTER-ELEM
+                                        (js->clj range*)
+                                        (js->clj args :keywordize-keys true)))))
                     (clj->js options)))
 
 (defn request
@@ -105,7 +111,7 @@
                             (.end socket)))))
 
 (defn handle
-  [key-name start end]
+  [key-name range*]
   (if (= "s" key-name)
     (see)))
 
