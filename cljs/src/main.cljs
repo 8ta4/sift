@@ -30,13 +30,13 @@
         split-lines))
 
 (defn sift
-  [f]
+  [target]
   (promesa/let [s (call-function "getreg" ["+"])]
     (->> s
          parse
          pr-str
-         (spit (str f ".sift")))
-    (.command (:nvim @state) (str "e " f ".sift"))))
+         (spit (str target ".sift")))
+    (.command (:nvim @state) (str "e " target ".sift"))))
 
 (defn render-item
   [item]
@@ -49,8 +49,11 @@
        (:text item)))
 
 (defn register-command
-  [plugin command-name handle options]
-  (.registerCommand plugin command-name #(apply handle (js->clj % :keywordize-keys true)) (clj->js options)))
+  [plugin command-name f options]
+  (.registerCommand plugin command-name
+                    (fn [& args]
+                      (apply f (mapcat #(js->clj % :keywordize-keys true) args)))
+                    (clj->js options)))
 
 (defn request
   [function & args]
@@ -102,7 +105,7 @@
                             (.end socket)))))
 
 (defn handle
-  [key-name]
+  [key-name start end]
   (if (= "s" key-name)
     (see)))
 
