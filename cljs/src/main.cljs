@@ -8,7 +8,7 @@
             [net :refer [createConnection]]
             [os :refer [homedir tmpdir]]
             [path :refer [join]]
-            [promesa.core :as promesa :refer [all]]))
+            [promesa.core :as promesa]))
 
 (defonce state
   (atom {}))
@@ -70,8 +70,8 @@
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
-    (all (map #(request "nvim_buf_set_keymap" (.-id buffer) % "s" "<Cmd>:Handle s<CR>" {:silent true})
-              #{"n" "v"}))
+    (run! #(request "nvim_buf_set_keymap" (.-id buffer) % "s" "<Cmd>:Handle s<CR>" {:silent true})
+          #{"n" "v"})
     (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
                (clj->js (if (existsSync path)
