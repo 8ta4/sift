@@ -92,6 +92,14 @@ No. `sift` shows lists in Neovim. You get to leverage Neovim's performance and r
 
 Yes. If the focus shifts to the browser when you open a reference, it'd break your sifting flow.
 
+> If I open references, can the cursor move to another row?
+
+No. This way, you won't have to go back and mark the item after opening references.
+
+> If I hit `s` in Visual mode, does the visual selection disappear?
+
+No. Preserving the visual selection allows you to press `d` to mark the highlighted block without having to select the items again.
+
 > Does `sift` use AppleScript to open reference tabs?
 
 No. `sift` uses a Chrome extension.
@@ -130,6 +138,24 @@ Even if you accidentally hit `s` and closed some tabs, you can try reopening the
 
 ### Marking
 
+> If I press `d` to mark items, can the cursor move to a different row?
+
+Yes.
+
+The cursor will move to the next row after any rows you mark with `d`, as long as there's a next row. Otherwise, the cursor will be on the last row.
+
+You'll probably want to go to the next item anyway.
+
+`a`, `c` and `x` work similarly.
+
+> If I press `d` to mark an item, can the cursor move to another column?
+
+Yes. `sift` wants the cursor to stay on the same column. But the new row might not have enough columns. If that happens, the cursor jumps to the row's last column.
+
+> If I hit `d` in Visual mode, does the visual selection vanish?
+
+Yes. If the visual selection remained active, the advancing cursor might stretch the selection box downward.
+
 > If I've pressed `D` to hide done items, does marking an item as done make it disappear?
 
 No. The item remains visible for the following reasons:
@@ -137,6 +163,28 @@ No. The item remains visible for the following reasons:
 - If an item disappeared and caused the items below it to move up, the sudden layout shift would be jarring.
 
 - Suppose you've also pressed `X` to hide deleted items and you mean to press `d` but accidentally hit `x`. If the item disappeared without distinct feedback, you'd lack clear confirmation of whether it was marked done or deleted.
+
+> If I press `u` to undo a mark, does the visibility of items get restored?
+
+Yes. When you undo a mark, the items go back to being visible or hidden just like they were when you first marked them.
+
+If `sift` didn't do this, marks could revert without visual feedback.
+
+> If I hit `u` to undo a mark, will the regex filter come back?
+
+Yes. If the regex filter didn't revert, the undone items appearing on the screen might conflict with your current search input.
+
+> If I hit `u` to undo a mark, will the visibility toggles be restored?
+
+Yes. It'd be inconsistent not to restore the visibility toggles while restoring the regex filter.
+
+> If I press `u` to undo a mark, can the cursor move?
+
+Yes. When you undo a mark, the cursor jumps back to the same row and column it was on when you set the mark. This helps you see if the undo worked.
+
+> If I press `u` in Visual mode, does the visual selection disappear?
+
+Yes. Undo rewinds the cursor. Neovim anchors visual selections to the cursor. If you jump the cursor across the file, the selection box might get stretched. Dropping the selection prevents this jarring behavior.
 
 ### Saving
 
