@@ -49,8 +49,8 @@
        (:text item)))
 
 (defn register-command
-  [plugin command-name handle options]
-  (.registerCommand plugin command-name #(apply handle (js->clj % :keywordize-keys true)) (clj->js options)))
+  [plugin command-name f options]
+  (.registerCommand plugin command-name #(apply f (js->clj % :keywordize-keys true)) (clj->js options)))
 
 (defn request
   [function & args]
