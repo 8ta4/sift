@@ -50,7 +50,10 @@
 
 (defn register-command
   [plugin command-name f options]
-  (.registerCommand plugin command-name #(apply f (js->clj % :keywordize-keys true)) (clj->js options)))
+  (.registerCommand plugin command-name
+                    (fn [& args]
+                      (apply f (mapcat #(js->clj % :keywordize-keys true) args)))
+                    (clj->js options)))
 
 (defn request
   [function & args]
@@ -102,7 +105,7 @@
                             (.end socket)))))
 
 (defn handle
-  [key-name]
+  [key-name start end]
   (if (= "s" key-name)
     (see)))
 
