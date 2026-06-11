@@ -3,6 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
+            [com.rpl.specter :refer [AFTER-ELEM FIRST setval transform]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
             [os :refer [homedir tmpdir]]
@@ -51,8 +52,13 @@
 (defn register-command
   [plugin command-name f options]
   (.registerCommand plugin command-name
-                    (fn [& args]
-                      (apply f (mapcat #(js->clj % :keywordize-keys true) args)))
+                    (fn
+                      ([args]
+                       (apply f (js->clj args :keywordize-keys true)))
+                      ([args range*]
+                       (apply f (setval AFTER-ELEM
+                                        (transform FIRST dec (js->clj range*))
+                                        (js->clj args :keywordize-keys true)))))
                     (clj->js options)))
 
 (defn request
@@ -64,7 +70,8 @@
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
-    (request "nvim_buf_set_keymap" (.-id buffer) "n" "s" ":Handle s<CR>" {:silent true})
+    (run! #(request "nvim_buf_set_keymap" (.-id buffer) % "s" "<Cmd>:Handle s<CR>" {:silent true})
+          #{"n" "v"})
     (.setOption buffer "buftype" "acwrite")
     (.setLines buffer
                (clj->js (if (existsSync path)
@@ -105,7 +112,7 @@
                             (.end socket)))))
 
 (defn handle
-  [key-name start end]
+  [key-name range*]
   (if (= "s" key-name)
     (see)))
 
