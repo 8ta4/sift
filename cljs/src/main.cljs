@@ -99,7 +99,8 @@
                           "Handle "
                           (name action)
                           "<CR>")
-                     {:silent true}))
+                     {:nowait true
+                      :silent true}))
           (cartesian-product modes actions))
     (.setOption buffer "buftype" "acwrite")
     (when (existsSync path)
