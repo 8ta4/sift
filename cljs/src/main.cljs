@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST setval transform]]
+            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST MAP-VALS setval transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -14,7 +14,8 @@
             [promesa.core :as promesa]))
 
 (defonce state
-  (atom {:items (ordered-map)}))
+  (atom {:items (ordered-map)
+         :undos []}))
 
 (defn call-function
   [function-name options]
@@ -141,10 +142,15 @@
 (defn mark
   [action range*]
   (promesa/let [buffer (.-buffer (:nvim @state))
-                lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))]
-    (remove (comp (partial = action)
-                  last)
-            (select-keys (:items @state) (map strip-prefix lines)))))
+                lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
+                previous (into {} (remove (comp (partial = action)
+                                                last)
+                                          (select-keys (:items @state) (map strip-prefix lines))))]
+    (when-not (empty? previous)
+      (transform ATOM
+                 (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
+                       (partial transform* :undos (partial cons previous)))
+                 state))))
 
 (defn handle
   [key-name range*]
