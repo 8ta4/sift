@@ -136,7 +136,8 @@
 (defn handle
   [key-name range*]
   (cond (= "s" key-name) (see)
-        (mark-actions key-name) (mark key-name range*)))
+        (mark-actions key-name) (mark key-name range*))
+  nil)
 
 (def chrome-hosts-directory
 ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
@@ -169,8 +170,10 @@
   (setval [ATOM :nvim] (.-nvim plugin) state)
   (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
                                                        :sync true}))
-  (register-command plugin "Sift" sift {:nargs 1})
+  (register-command plugin "Sift" sift {:nargs 1
+                                        :sync true})
   (register-command plugin "Handle" handle {:nargs 1
-                                            :range ""})
+                                            :range ""
+                                            :sync true})
   (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://aobaoadfgfpeggekafmdlmgdondfnpdo"]})
   (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))
