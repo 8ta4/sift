@@ -142,7 +142,9 @@
   [action range*]
   (promesa/let [buffer (.-buffer (:nvim @state))
                 lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))]
-    (map strip-prefix lines)))
+    (remove (comp (partial = (keyword action))
+                  last)
+            (select-keys (:items @state) (map strip-prefix lines)))))
 
 (defn handle
   [key-name range*]
