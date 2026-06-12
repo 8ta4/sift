@@ -113,6 +113,10 @@
     (.writeUInt32LE header (.-length payload))
     (js/Buffer.concat (clj->js [header payload]))))
 
+(defn strip-prefix
+  [line]
+  (subs line 4))
+
 (defn see
   []
   (promesa/let [references (get-references)
@@ -120,14 +124,14 @@
                 socket (createConnection socket-path)]
     (.on socket "connect" (fn []
                             (.write socket (encode {:references references
-                                                    :text (subs line 4)}))
+                                                    :text (strip-prefix line)}))
                             (.end socket)))))
 
 (defn mark
   [action range*]
   (promesa/let [buffer (.-buffer (:nvim @state))
                 lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))]
-    lines))
+    (map strip-prefix lines)))
 
 (defn handle
   [key-name range*]
