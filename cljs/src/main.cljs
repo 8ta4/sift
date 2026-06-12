@@ -3,6 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.math.combinatorics :refer [cartesian-product]]
+            [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
             [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST setval transform]]
             [flatland.ordered.map :refer [ordered-map]]
@@ -63,8 +64,11 @@
   (.then (.request (:nvim @state) function (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
+(def mark-actions
+  #{"a" "c" "d" "x"})
+
 (def actions
-  #{"<C-r>" "a" "c" "d" "x" "s" "u"})
+  (union #{"<C-r>" "s" "u"} mark-actions))
 
 (def modes
   #{"n" "v"})
@@ -128,7 +132,7 @@
 (defn handle
   [key-name range*]
   (cond (= "s" key-name) (see)
-        (#{"a" "c" "d" "x"} key-name) (mark key-name range*)))
+        (mark-actions key-name) (mark key-name range*)))
 
 (def chrome-hosts-directory
 ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
