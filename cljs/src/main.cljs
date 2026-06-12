@@ -78,7 +78,18 @@
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
     (run! (fn [[mode action]]
-            (request "nvim_buf_set_keymap" (.-id buffer) mode action (str "<Cmd>:Handle " action "<CR>") {:silent true}))
+            (request "nvim_buf_set_keymap"
+                     (.-id buffer)
+                     mode
+                     action
+                     (str "<Cmd>:"
+                          (if (= "n" mode)
+                            ""
+                            "'<,'>")
+                          "Handle "
+                          action
+                          "<CR>")
+                     {:silent true}))
           (cartesian-product modes actions))
     (.setOption buffer "buftype" "acwrite")
     (when (existsSync path)
