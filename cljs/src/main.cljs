@@ -119,10 +119,17 @@
                                                     :text (subs line 4)}))
                             (.end socket)))))
 
+(defn mark
+  [action range*]
+  (promesa/let [buffer (.-buffer (:nvim @state))
+                lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))]
+    lines))
+
 (defn handle
   [key-name range*]
   (if (= "s" key-name)
-    (see)))
+    (see)
+    (mark key-name range*)))
 
 (def chrome-hosts-directory
 ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
