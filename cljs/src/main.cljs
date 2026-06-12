@@ -65,13 +65,13 @@
          #(js->clj % :keywordize-keys true)))
 
 (def mark-actions
-  #{"a" "c" "d" "x"})
+  #{:a :c :d :x})
 
 (def actions
-  (union #{"<C-r>" "s" "u"} mark-actions))
+  (union #{:<C-r> :s :u} mark-actions))
 
 (def modes
-  #{"n" "v"})
+  #{:n :v})
 
 (defn load
   []
@@ -80,14 +80,14 @@
     (run! (fn [[mode action]]
             (request "nvim_buf_set_keymap"
                      (.-id buffer)
-                     mode
-                     action
+                     (name mode)
+                     (name action)
                      (str "<Cmd>:"
-                          (if (= "n" mode)
+                          (if (= :n mode)
                             ""
                             "'<,'>")
                           "Handle "
-                          action
+                          (name action)
                           "<CR>")
                      {:silent true}))
           (cartesian-product modes actions))
@@ -142,14 +142,14 @@
   [action range*]
   (promesa/let [buffer (.-buffer (:nvim @state))
                 lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))]
-    (remove (comp (partial = (keyword action))
+    (remove (comp (partial = action)
                   last)
             (select-keys (:items @state) (map strip-prefix lines)))))
 
 (defn handle
   [key-name range*]
-  (cond (= "s" key-name) (see)
-        (mark-actions key-name) (mark key-name range*))
+  (cond (= :s (keyword key-name)) (see)
+        (mark-actions (keyword key-name)) (mark (keyword key-name) range*))
   nil)
 
 (def chrome-hosts-directory
