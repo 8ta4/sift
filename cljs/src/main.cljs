@@ -75,6 +75,14 @@
 (def modes
   #{:n :v})
 
+(defn set-lines
+  [buffer lines range*]
+  (.setOption buffer "modifiable" true)
+  (.setLines buffer
+             (clj->js lines)
+             (clj->js (zipmap [:start :end] range*)))
+  (.setOption buffer "modifiable" false))
+
 (defn load
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
@@ -99,14 +107,11 @@
               (read-string {:readers {'ordered/map ordered-map}} (slurp path))
               state))
     (promesa/let [buffer (.-buffer (:nvim @state))]
-      (.setLines buffer
+      (set-lines buffer
                  (->> @state
                       :items
-                      (map render-item)
-                      clj->js)
-                 (clj->js {:start 0
-                           :end -1}))
-      (.setOption buffer "modifiable" false))))
+                      (map render-item))
+                 [0 -1]))))
 
 (defn get-references
   []
@@ -152,12 +157,10 @@
                                             last))
                               (into {}))]
     (when-not (empty? previous)
-      (.setOption buffer "modifiable" true)
-      (.setLines buffer
-                 (clj->js (map (partial setval* (srange 1 2) (render-mark action))
-                               (js->clj lines)))
-                 (clj->js (zipmap [:start :end] range*)))
-      (.setOption buffer "modifiable" false)
+      (set-lines buffer
+                 (map (partial setval* (srange 1 2) (render-mark action))
+                      (js->clj lines))
+                 range*)
       (transform ATOM
                  (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
                        (partial transform* :undos (partial cons previous)))
