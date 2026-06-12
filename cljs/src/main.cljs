@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST setval transform]]
+            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST MAP-VALS setval setval* srange transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -14,7 +14,8 @@
             [promesa.core :as promesa]))
 
 (defonce state
-  (atom {:items (ordered-map)}))
+  (atom {:items (ordered-map)
+         :undos []}))
 
 (defn call-function
   [function-name options]
@@ -37,13 +38,14 @@
          (spit (str target ".sift")))
     (.command (:nvim @state) (str "e " target ".sift"))))
 
+(def render-mark
+  (comp #(string/replace % "c" " ")
+        name))
+
 (defn render-item
   [item]
   (str "["
-       (-> item
-           val
-           name
-           (string/replace "c" " "))
+       (render-mark (val item))
        "] "
        (key item)))
 
@@ -65,13 +67,21 @@
          #(js->clj % :keywordize-keys true)))
 
 (def mark-actions
-  #{"a" "c" "d" "x"})
+  #{:a :c :d :x})
 
 (def actions
-  (union #{"<C-r>" "s" "u"} mark-actions))
+  (union #{:<C-r> :s :u} mark-actions))
 
 (def modes
-  #{"n" "v"})
+  #{:n :v})
+
+(defn set-lines
+  [buffer lines range*]
+  (.setOption buffer "modifiable" true)
+  (.setLines buffer
+             (clj->js lines)
+             (clj->js (zipmap [:start :end] range*)))
+  (.setOption buffer "modifiable" false))
 
 (defn load
   []
@@ -80,14 +90,14 @@
     (run! (fn [[mode action]]
             (request "nvim_buf_set_keymap"
                      (.-id buffer)
-                     mode
-                     action
+                     (name mode)
+                     (name action)
                      (str "<Cmd>:"
-                          (if (= "n" mode)
+                          (if (= :n mode)
                             ""
                             "'<,'>")
                           "Handle "
-                          action
+                          (name action)
                           "<CR>")
                      {:silent true}))
           (cartesian-product modes actions))
@@ -97,14 +107,11 @@
               (read-string {:readers {'ordered/map ordered-map}} (slurp path))
               state))
     (promesa/let [buffer (.-buffer (:nvim @state))]
-      (.setLines buffer
+      (set-lines buffer
                  (->> @state
                       :items
-                      (map render-item)
-                      clj->js)
-                 (clj->js {:start 0
-                           :end -1}))
-      (.setOption buffer "modifiable" false))))
+                      (map render-item))
+                 [0 -1]))))
 
 (defn get-references
   []
@@ -141,13 +148,28 @@
 (defn mark
   [action range*]
   (promesa/let [buffer (.-buffer (:nvim @state))
-                lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))]
-    (map strip-prefix lines)))
+                lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
+                previous (->> lines
+                              js->clj
+                              (map strip-prefix)
+                              (select-keys (:items @state))
+                              (remove (comp (partial = action)
+                                            last))
+                              (into {}))]
+    (when-not (empty? previous)
+      (set-lines buffer
+                 (map (partial setval* (srange 1 2) (render-mark action))
+                      (js->clj lines))
+                 range*)
+      (transform ATOM
+                 (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
+                       (partial transform* :undos (partial cons previous)))
+                 state))))
 
 (defn handle
   [key-name range*]
-  (cond (= "s" key-name) (see)
-        (mark-actions key-name) (mark key-name range*))
+  (cond (= :s (keyword key-name)) (see)
+        ((keyword key-name) mark-actions) (mark (keyword key-name) range*))
   nil)
 
 (def chrome-hosts-directory
