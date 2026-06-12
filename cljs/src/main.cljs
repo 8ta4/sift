@@ -2,6 +2,8 @@
   (:require [app-root-path]
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
+            [clojure.math.combinatorics :refer [cartesian-product]]
+            [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
             [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST setval transform]]
             [flatland.ordered.map :refer [ordered-map]]
@@ -62,33 +64,47 @@
   (.then (.request (:nvim @state) function (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
-(defn render
-  [_ _ _ state*]
-  (promesa/let [buffer (.-buffer (:nvim state*))]
-    (.setOption buffer "modifiable" true)
-    (.setLines buffer
-               (->> state*
-                    :items
-                    (map render-item)
-                    clj->js)
-               (clj->js {:start 0
-                         :end -1}))
-    (.setOption buffer "modifiable" false)))
+(def mark-actions
+  #{"a" "c" "d" "x"})
+
+(def actions
+  (union #{"<C-r>" "s" "u"} mark-actions))
+
+(def modes
+  #{"n" "v"})
 
 (defn load
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
-    (run! #(request "nvim_buf_set_keymap" (.-id buffer) % "s" "<Cmd>:Handle s<CR>" {:silent true})
-          #{"n" "v"})
+    (run! (fn [[mode action]]
+            (request "nvim_buf_set_keymap"
+                     (.-id buffer)
+                     mode
+                     action
+                     (str "<Cmd>:"
+                          (if (= "n" mode)
+                            ""
+                            "'<,'>")
+                          "Handle "
+                          action
+                          "<CR>")
+                     {:silent true}))
+          (cartesian-product modes actions))
     (.setOption buffer "buftype" "acwrite")
-    (.setOption buffer "modifiable" false)
-    (add-watch state :render render)
     (when (existsSync path)
       (setval [ATOM :items]
               (read-string {:readers {'ordered/map ordered-map}} (slurp path))
               state))
-    nil))
+    (promesa/let [buffer (.-buffer (:nvim @state))]
+      (.setLines buffer
+                 (->> @state
+                      :items
+                      (map render-item)
+                      clj->js)
+                 (clj->js {:start 0
+                           :end -1}))
+      (.setOption buffer "modifiable" false))))
 
 (defn get-references
   []
@@ -108,6 +124,10 @@
     (.writeUInt32LE header (.-length payload))
     (js/Buffer.concat (clj->js [header payload]))))
 
+(defn strip-prefix
+  [line]
+  (subs line 4))
+
 (defn see
   []
   (promesa/let [references (get-references)
@@ -115,13 +135,20 @@
                 socket (createConnection socket-path)]
     (.on socket "connect" (fn []
                             (.write socket (encode {:references references
-                                                    :text (subs line 4)}))
+                                                    :text (strip-prefix line)}))
                             (.end socket)))))
+
+(defn mark
+  [action range*]
+  (promesa/let [buffer (.-buffer (:nvim @state))
+                lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))]
+    (map strip-prefix lines)))
 
 (defn handle
   [key-name range*]
-  (if (= "s" key-name)
-    (see)))
+  (cond (= "s" key-name) (see)
+        (mark-actions key-name) (mark key-name range*))
+  nil)
 
 (def chrome-hosts-directory
 ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
@@ -154,8 +181,10 @@
   (setval [ATOM :nvim] (.-nvim plugin) state)
   (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
                                                        :sync true}))
-  (register-command plugin "Sift" sift {:nargs 1})
+  (register-command plugin "Sift" sift {:nargs 1
+                                        :sync true})
   (register-command plugin "Handle" handle {:nargs 1
-                                            :range ""})
+                                            :range ""
+                                            :sync true})
   (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://aobaoadfgfpeggekafmdlmgdondfnpdo"]})
   (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))
