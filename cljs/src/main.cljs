@@ -2,6 +2,7 @@
   (:require [app-root-path]
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
+            [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.string :as string :refer [split-lines trim]]
             [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST setval transform]]
             [flatland.ordered.map :refer [ordered-map]]
@@ -62,12 +63,19 @@
   (.then (.request (:nvim @state) function (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
+(def actions
+  #{"<C-r>" "a" "c" "d" "x" "s" "u"})
+
+(def modes
+  #{"n" "v"})
+
 (defn load
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
                 path (.-name buffer)]
-    (run! #(request "nvim_buf_set_keymap" (.-id buffer) % "s" "<Cmd>:Handle s<CR>" {:silent true})
-          #{"n" "v"})
+    (run! (fn [[mode action]]
+            (request "nvim_buf_set_keymap" (.-id buffer) mode action (str "<Cmd>:Handle " action "<CR>") {:silent true}))
+          (cartesian-product modes actions))
     (.setOption buffer "buftype" "acwrite")
     (when (existsSync path)
       (setval [ATOM :items]
