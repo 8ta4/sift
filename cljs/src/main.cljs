@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST keypath setval setval* srange transform transform*]]
+            [com.rpl.specter :refer [AFTER-ELEM ATOM BEFORE-ELEM FIRST keypath setval setval* srange transform]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -163,7 +163,7 @@
                  range*)
       (transform ATOM
                  (comp (partial setval* [:items (apply keypath (keys previous))] action)
-                       (partial transform* :undos (partial cons previous)))
+                       (partial setval* [:undos BEFORE-ELEM] previous))
                  state))))
 
 (defn handle
