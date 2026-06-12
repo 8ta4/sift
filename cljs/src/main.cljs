@@ -4,6 +4,7 @@
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
             [com.rpl.specter :refer [AFTER-ELEM FIRST setval transform]]
+            [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
             [os :refer [homedir tmpdir]]
@@ -18,14 +19,9 @@
   (.then (.callFunction (:nvim @state) function-name (clj->js options))
          #(js->clj % :keywordize-keys true)))
 
-(defn make-item
-  [s]
-  {:mark :c
-   :text s})
-
 (def parse
-  (comp (partial map make-item)
-        distinct
+  (comp (partial into (ordered-map))
+        (partial map (juxt identity (constantly :c)))
         (partial remove empty?)
         (partial map trim)
         split-lines))
@@ -43,11 +39,11 @@
   [item]
   (str "["
        (-> item
-           :mark
+           val
            name
            (string/replace "c" " "))
        "] "
-       (:text item)))
+       (key item)))
 
 (defn register-command
   [plugin command-name f options]
@@ -77,7 +73,7 @@
                (clj->js (if (existsSync path)
                           (->> path
                                slurp
-                               read-string
+                               (read-string {:readers {'ordered/map ordered-map}})
                                (map render-item))
                           []))
                (clj->js {:start 0 :end -1}))

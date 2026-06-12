@@ -1,1 +1,1 @@
-({:mark :c, :text "one"} {:mark :c, :text "two"} {:mark :c, :text "three"})
+#ordered/map (["one" :c] ["two" :c] ["three" :c])
