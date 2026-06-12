@@ -156,7 +156,10 @@
                               (select-keys (:items @state))
                               (remove (comp (partial = action)
                                             last))
-                              (into {}))]
+                              (into {}))
+                mode (.-mode (:nvim @state))
+                window (.-window (:nvim @state))
+                cursor (.-cursor window)]
     (when-not (empty? previous)
       (set-lines buffer
                  (map (partial setval* (srange 1 2) (render-mark action))
@@ -165,7 +168,13 @@
       (transform ATOM
                  (comp (partial setval* [:items (apply keypath (keys previous))] action)
                        (partial setval* [:undos BEFORE-ELEM] previous))
-                 state))))
+                 state))
+    (if (= "n" (:mode (js->clj mode :keywordize-keys true)))
+      (->> cursor
+           js->clj
+           (transform FIRST inc)
+           clj->js
+           (set! (.-cursor window))))))
 
 (defn handle
   [key-name range*]
