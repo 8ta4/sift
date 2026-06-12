@@ -3,7 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [AFTER-ELEM FIRST setval transform]]
+            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST setval transform]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -140,7 +140,7 @@
 
 (defn main
   [plugin]
-  (reset! state {:nvim (.-nvim plugin)})
+  (setval [ATOM :nvim] (.-nvim plugin) state)
   (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
                                                        :sync true}))
   (register-command plugin "Sift" sift {:nargs 1})
