@@ -12,7 +12,7 @@
             [promesa.core :as promesa]))
 
 (defonce state
-  (atom {}))
+  (atom {:items (ordered-map)}))
 
 (defn call-function
   [function-name options]
@@ -62,6 +62,19 @@
   (.then (.request (:nvim @state) function (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
+(defn render
+  [_ _ _ state*]
+  (promesa/let [buffer (.-buffer (:nvim state*))]
+    (.setOption buffer "modifiable" true)
+    (.setLines buffer
+               (->> state*
+                    :items
+                    (map render-item)
+                    clj->js)
+               (clj->js {:start 0
+                         :end -1}))
+    (.setOption buffer "modifiable" false)))
+
 (defn load
   []
   (promesa/let [buffer (.-buffer (:nvim @state))
@@ -69,15 +82,13 @@
     (run! #(request "nvim_buf_set_keymap" (.-id buffer) % "s" "<Cmd>:Handle s<CR>" {:silent true})
           #{"n" "v"})
     (.setOption buffer "buftype" "acwrite")
-    (.setLines buffer
-               (clj->js (if (existsSync path)
-                          (->> path
-                               slurp
-                               (read-string {:readers {'ordered/map ordered-map}})
-                               (map render-item))
-                          []))
-               (clj->js {:start 0 :end -1}))
-    (.setOption buffer "modifiable" false)))
+    (.setOption buffer "modifiable" false)
+    (add-watch state :render render)
+    (when (existsSync path)
+      (setval [ATOM :items]
+              (read-string {:readers {'ordered/map ordered-map}} (slurp path))
+              state))
+    nil))
 
 (defn get-references
   []
