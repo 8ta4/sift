@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST MAP-VALS setval transform transform*]]
+            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST MAP-VALS setval setval* srange transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -38,13 +38,14 @@
          (spit (str target ".sift")))
     (.command (:nvim @state) (str "e " target ".sift"))))
 
+(def render-mark
+  (comp #(string/replace % "c" " ")
+        name))
+
 (defn render-item
   [item]
   (str "["
-       (-> item
-           val
-           name
-           (string/replace "c" " "))
+       (render-mark (val item))
        "] "
        (key item)))
 
@@ -143,10 +144,20 @@
   [action range*]
   (promesa/let [buffer (.-buffer (:nvim @state))
                 lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
-                previous (into {} (remove (comp (partial = action)
-                                                last)
-                                          (select-keys (:items @state) (map strip-prefix lines))))]
+                previous (->> lines
+                              js->clj
+                              (map strip-prefix)
+                              (select-keys (:items @state))
+                              (remove (comp (partial = action)
+                                            last))
+                              (into {}))]
     (when-not (empty? previous)
+      (.setOption buffer "modifiable" true)
+      (.setLines buffer
+                 (clj->js (map (partial setval* (srange 1 2) (render-mark action))
+                               (js->clj lines)))
+                 (clj->js (zipmap [:start :end] range*)))
+      (.setOption buffer "modifiable" false)
       (transform ATOM
                  (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
                        (partial transform* :undos (partial cons previous)))
