@@ -127,9 +127,8 @@
 
 (defn handle
   [key-name range*]
-  (if (= "s" key-name)
-    (see)
-    (mark key-name range*)))
+  (cond (= "s" key-name) (see)
+        (#{"a" "c" "d" "x"} key-name) (mark key-name range*)))
 
 (def chrome-hosts-directory
 ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
