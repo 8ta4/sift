@@ -166,6 +166,7 @@
                  (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
                        (partial setval* [:undos BEFORE-ELEM] previous))
                  state))
+    (request "nvim_input" "<Esc>")
     (->> bounds
          last
          (transform FIRST (partial + 2))
