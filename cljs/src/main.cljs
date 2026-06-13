@@ -189,12 +189,16 @@
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
+(defn redo
+  [])
+
 (defn handle
   [key-name]
   (if ((keyword key-name) mark-actions) (mark (keyword key-name))
       (case (keyword key-name)
         :s (see)
-        :u (undo)))
+        :u (undo)
+        :r (redo)))
   nil)
 
 (def chrome-hosts-directory
