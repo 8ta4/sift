@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS setval setval* srange transform transform*]]
+            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* srange transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -180,7 +180,12 @@
          (set! (.-cursor window)))))
 
 (defn undo
-  [])
+  []
+  (when-not (empty? (:undos @state))
+    (transform ATOM
+               (comp (partial transform* :items #(merge % (:snapshot (first (:undos @state)))))
+                     (partial setval* [:undos FIRST] NONE))
+               state)))
 
 (defn handle
   [key-name]
