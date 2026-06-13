@@ -156,9 +156,7 @@
                               (remove (comp (partial = action)
                                             last))
                               (into {}))
-                mode (.-mode (:nvim @state))
-                window (.-window (:nvim @state))
-                cursor (.-cursor window)]
+                window (.-window (:nvim @state))]
     (when-not (empty? previous)
       (set-lines buffer
                  (map (partial setval* (srange 1 2) (render-mark action))
@@ -168,12 +166,11 @@
                  (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
                        (partial setval* [:undos BEFORE-ELEM] previous))
                  state))
-    (if (= "n" (:mode (js->clj mode :keywordize-keys true)))
-      (->> cursor
-           js->clj
-           (transform FIRST inc)
-           clj->js
-           (set! (.-cursor window))))))
+    (->> bounds
+         last
+         (transform FIRST (partial + 2))
+         clj->js
+         (set! (.-cursor window)))))
 
 (defn handle
   [key-name]
