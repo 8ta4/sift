@@ -91,17 +91,17 @@
             (request "nvim_buf_set_keymap"
                      (.-id buffer)
                      (name mode)
-                     (name action)
+                     action
                      (str "<Cmd>:"
                           (if (= :n mode)
                             ""
                             "'<,'>")
                           "Handle "
-                          (name action)
+                          action
                           "<CR>")
                      {:nowait true
                       :silent true}))
-          (cartesian-product modes actions))
+          (cartesian-product modes (map name actions)))
     (.setOption buffer "buftype" "acwrite")
     (when (existsSync path)
       (setval [ATOM :items]
