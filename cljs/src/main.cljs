@@ -134,6 +134,13 @@
                                                     :text (strip-prefix line)}))
                             (.end socket)))))
 
+(defn mark*
+  [step]
+  (transform ATOM
+             (comp (partial transform* :items #(merge % (:after step)))
+                   (partial setval* [:undos BEFORE-ELEM] step))
+             state))
+
 (defn mark
   [action]
   (promesa/let [buffer (.-buffer (:nvim @state))
@@ -149,21 +156,19 @@
                            (zipmap [:start :end])
                            clj->js
                            (.getLines buffer))
-                snapshot (->> lines
-                              js->clj
-                              (map strip-prefix)
-                              (select-keys (:items @state))
-                              (remove (comp (partial = action)
-                                            last))
-                              (into {}))
+                before (->> lines
+                            js->clj
+                            (map strip-prefix)
+                            (select-keys (:items @state))
+                            (remove (comp (partial = action)
+                                          last))
+                            (into {}))
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
-    (when-not (empty? snapshot)
-      (transform ATOM
-                 (comp (partial transform* :items #(merge % (setval MAP-VALS action snapshot)))
-                       (partial setval* [:undos BEFORE-ELEM] {:snapshot snapshot
-                                                              :cursor (first bounds)}))
-                 state)
+    (when-not (empty? before)
+      (mark* {:before before
+              :after (setval MAP-VALS action before)
+              :cursor (first bounds)})
       (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
@@ -183,7 +188,7 @@
                        (partial transform* :items #(->> @state
                                                         :undos
                                                         first
-                                                        :snapshot
+                                                        :before
                                                         (merge %))))
                  state)
       (render-buffer)
