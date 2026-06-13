@@ -179,12 +179,12 @@
     (promesa/let [window (.-window (:nvim @state))
                   cursor* (:cursor (first (:undos @state)))]
       (transform ATOM
-                 (comp (partial transform* :items #(->> @state
+                 (comp (partial setval* [:undos FIRST] NONE)
+                       (partial transform* :items #(->> @state
                                                         :undos
                                                         first
                                                         :snapshot
-                                                        (merge %)))
-                       (partial setval* [:undos FIRST] NONE))
+                                                        (merge %))))
                  state)
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
