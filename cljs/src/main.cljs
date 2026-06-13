@@ -179,10 +179,15 @@
          clj->js
          (set! (.-cursor window)))))
 
+(defn undo
+  [])
+
 (defn handle
   [key-name]
-  (cond ((keyword key-name) mark-actions) (mark (keyword key-name))
-        (= :s (keyword key-name)) (see))
+  (if ((keyword key-name) mark-actions) (mark (keyword key-name))
+      (case (keyword key-name)
+        :s (see)
+        :u (undo)))
   nil)
 
 (def chrome-hosts-directory
