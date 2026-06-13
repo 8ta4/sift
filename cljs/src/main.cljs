@@ -138,34 +138,38 @@
                                                     :text (strip-prefix line)}))
                             (.end socket)))))
 
+(def parse-position
+  (comp vec
+        (partial map dec)
+        drop-last
+        rest))
+
 (defn mark
   [action]
   (promesa/let [buffer (.-buffer (:nvim @state))
-                positions (all (map (partial call-function "getpos") ["." "v"]))
-                bounds (sort (map (comp vec
-                                        (partial map dec)
-                                        drop-last
-                                        rest)
-                                  positions))
+                cursor-position (call-function "getpos" ".")
+                selection-position (call-function "getpos" "v")
+                bounds (sort (map parse-position [cursor-position selection-position]))
                 range* (transform LAST inc (map first bounds))
                 lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
-                previous (->> lines
-                              js->clj
-                              (map strip-prefix)
-                              (select-keys (:items @state))
-                              (remove (comp (partial = action)
-                                            last))
-                              (into {}))
+                marks (->> lines
+                           js->clj
+                           (map strip-prefix)
+                           (select-keys (:items @state))
+                           (remove (comp (partial = action)
+                                         last))
+                           (into {}))
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
-    (when-not (empty? previous)
+    (when-not (empty? marks)
       (set-lines buffer
                  (map (partial setval* (srange 1 2) (render-mark action))
                       (js->clj lines))
                  range*)
       (transform ATOM
-                 (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
-                       (partial setval* [:undos BEFORE-ELEM] previous))
+                 (comp (partial transform* :items #(merge % (setval MAP-VALS action marks)))
+                       (partial setval* [:undos BEFORE-ELEM] {:marks marks
+                                                              :cursor (parse-position cursor-position)}))
                  state))
     (request "nvim_input" "<Esc>")
     (->> bounds
