@@ -137,8 +137,8 @@
 (defn mark*
   [step]
   (transform ATOM
-             (comp (partial transform* :items #(merge % (:after step)))
-                   (partial setval* [:undos BEFORE-ELEM] step))
+             (comp (partial setval* [:undos BEFORE-ELEM] step)
+                   (partial transform* :items #(merge % (:after step))))
              state))
 
 (defn mark
