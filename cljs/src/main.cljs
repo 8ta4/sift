@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* srange transform transform*]]
+            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -65,7 +65,7 @@
   #{:a :c :d :x})
 
 (def actions
-  (union #{:<C-r> :s :u} mark-actions))
+  (union #{:r :s :u} mark-actions))
 
 (def modes
   #{"n" "v"})
@@ -87,7 +87,7 @@
             (request "nvim_buf_set_keymap"
                      (.-id buffer)
                      (name mode)
-                     action
+                     (get {"r" "<C-r>"} action action)
                      (str "<Cmd>:"
                           "Handle "
                           action
@@ -134,20 +134,21 @@
                                                     :text (strip-prefix line)}))
                             (.end socket)))))
 
-(def parse-position
-  (comp vec
-        (partial map dec)
-        drop-last
-        rest))
-
 (defn mark
   [action]
   (promesa/let [buffer (.-buffer (:nvim @state))
-                cursor-position (call-function "getpos" ".")
-                selection-position (call-function "getpos" "v")
-                bounds (sort (map parse-position [cursor-position selection-position]))
-                range* (transform LAST inc (map first bounds))
-                lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
+                positions (all (map (partial call-function "getpos") ["." "v"]))
+                bounds (sort (map (comp vec
+                                        (partial map dec)
+                                        drop-last
+                                        rest)
+                                  positions))
+                lines (->> bounds
+                           (map first)
+                           (transform LAST inc)
+                           (zipmap [:start :end])
+                           clj->js
+                           (.getLines buffer))
                 snapshot (->> lines
                               js->clj
                               (map strip-prefix)
@@ -161,7 +162,7 @@
       (transform ATOM
                  (comp (partial transform* :items #(merge % (setval MAP-VALS action snapshot)))
                        (partial setval* [:undos BEFORE-ELEM] {:snapshot snapshot
-                                                              :cursor (parse-position cursor-position)}))
+                                                              :cursor (first bounds)}))
                  state)
       (render-buffer))
     (request "nvim_input" "<Esc>")
@@ -178,22 +179,26 @@
     (promesa/let [window (.-window (:nvim @state))
                   cursor* (:cursor (first (:undos @state)))]
       (transform ATOM
-                 (comp (partial transform* :items #(->> @state
+                 (comp (partial setval* [:undos FIRST] NONE)
+                       (partial transform* :items #(->> @state
                                                         :undos
                                                         first
                                                         :snapshot
-                                                        (merge %)))
-                       (partial setval* [:undos FIRST] NONE))
+                                                        (merge %))))
                  state)
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
+
+(defn redo
+  [])
 
 (defn handle
   [key-name]
   (if ((keyword key-name) mark-actions) (mark (keyword key-name))
       (case (keyword key-name)
         :s (see)
-        :u (undo)))
+        :u (undo)
+        :r (redo)))
   nil)
 
 (def chrome-hosts-directory
