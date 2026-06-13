@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* srange transform transform*]]
+            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
