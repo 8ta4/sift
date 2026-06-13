@@ -176,7 +176,11 @@
   []
   (when-not (empty? (:undos @state))
     (transform ATOM
-               (comp (partial transform* :items #(merge % (:snapshot (first (:undos @state)))))
+               (comp (partial transform* :items #(->> @state
+                                                      :undos
+                                                      first
+                                                      :snapshot
+                                                      (merge %)))
                      (partial setval* [:undos FIRST] NONE))
                state)
     (render-buffer)))
