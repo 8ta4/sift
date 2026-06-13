@@ -18,8 +18,8 @@
          :undos []}))
 
 (defn call-function
-  [function-name options]
-  (.then (.callFunction (:nvim @state) function-name (clj->js options))
+  [function-name & args]
+  (.then (.callFunction (:nvim @state) function-name (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
 (def parse
@@ -31,7 +31,7 @@
 
 (defn sift
   [target]
-  (promesa/let [s (call-function "getreg" ["+"])]
+  (promesa/let [s (call-function "getreg" "+")]
     (->> s
          parse
          pr-str
