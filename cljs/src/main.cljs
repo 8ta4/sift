@@ -186,7 +186,7 @@
                        (partial setval* [:undos FIRST] NONE))
                  state)
       (render-buffer)
-      (set! (.-cursor window) (clj->js cursor*)))))
+      (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
 (defn handle
   [key-name]
