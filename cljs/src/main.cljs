@@ -22,7 +22,7 @@
   (.then (.callFunction (:nvim @state) function-name (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
-(def parse
+(def parse-items
   (comp (partial into (ordered-map))
         (partial map (juxt identity (constantly :c)))
         (partial remove empty?)
@@ -33,7 +33,7 @@
   [target]
   (promesa/let [s (call-function "getreg" "+")]
     (->> s
-         parse
+         parse-items
          pr-str
          (spit (str target ".sift")))
     (.command (:nvim @state) (str "e " target ".sift"))))
@@ -152,23 +152,23 @@
                 bounds (sort (map parse-position [cursor-position selection-position]))
                 range* (transform LAST inc (map first bounds))
                 lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
-                marks (->> lines
-                           js->clj
-                           (map strip-prefix)
-                           (select-keys (:items @state))
-                           (remove (comp (partial = action)
-                                         last))
-                           (into {}))
+                snapshot (->> lines
+                              js->clj
+                              (map strip-prefix)
+                              (select-keys (:items @state))
+                              (remove (comp (partial = action)
+                                            last))
+                              (into {}))
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
-    (when-not (empty? marks)
+    (when-not (empty? snapshot)
       (set-lines buffer
                  (map (partial setval* (srange 1 2) (render-mark action))
                       (js->clj lines))
                  range*)
       (transform ATOM
-                 (comp (partial transform* :items #(merge % (setval MAP-VALS action marks)))
-                       (partial setval* [:undos BEFORE-ELEM] {:marks marks
+                 (comp (partial transform* :items #(merge % (setval MAP-VALS action snapshot)))
+                       (partial setval* [:undos BEFORE-ELEM] {:snapshot snapshot
                                                               :cursor (parse-position cursor-position)}))
                  state))
     (request "nvim_input" "<Esc>")
