@@ -177,8 +177,8 @@
 
 (defn handle
   [key-name]
-  (cond (= :s (keyword key-name)) (see)
-        ((keyword key-name) mark-actions) (mark (keyword key-name)))
+  (cond ((keyword key-name) mark-actions) (mark (keyword key-name))
+        (= :s (keyword key-name)) (see))
   nil)
 
 (def chrome-hosts-directory
