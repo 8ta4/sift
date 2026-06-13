@@ -156,6 +156,7 @@
                               (remove (comp (partial = action)
                                             last))
                               (into {}))
+                length (.-length buffer)
                 window (.-window (:nvim @state))]
     (when-not (empty? previous)
       (set-lines buffer
@@ -169,7 +170,8 @@
     (request "nvim_input" "<Esc>")
     (->> bounds
          last
-         (transform FIRST (partial + 2))
+         (transform FIRST (comp (partial min length)
+                                (partial + 2)))
          clj->js
          (set! (.-cursor window)))))
 
