@@ -15,6 +15,7 @@
 
 (defonce state
   (atom {:items (ordered-map)
+         :redos []
          :undos []}))
 
 (defn call-function
