@@ -201,20 +201,24 @@
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
+(defn redo*
+  []
+  (transform ATOM
+             (comp (partial setval* [:undos BEFORE-ELEM] (first (:redos @state)))
+                   (partial setval* [:redos FIRST] NONE)
+                   (partial transform* :items #(->> @state
+                                                    :redos
+                                                    first
+                                                    :after
+                                                    (merge %))))
+             state))
+
 (defn redo
   []
   (when-not (empty? (:redos @state))
     (promesa/let [window (.-window (:nvim @state))
                   cursor* (:cursor (first (:redos @state)))]
-      (transform ATOM
-                 (comp (partial setval* [:undos BEFORE-ELEM] (first (:redos @state)))
-                       (partial setval* [:redos FIRST] NONE)
-                       (partial transform* :items #(->> @state
-                                                        :redos
-                                                        first
-                                                        :after
-                                                        (merge %))))
-                 state)
+      (redo*)
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
