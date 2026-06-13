@@ -182,7 +182,8 @@
 (defn undo*
   []
   (transform ATOM
-             (comp (partial setval* [:undos FIRST] NONE)
+             (comp (partial setval* [:redos BEFORE-ELEM] (first (:undos @state)))
+                   (partial setval* [:undos FIRST] NONE)
                    (partial transform* :items #(->> @state
                                                     :undos
                                                     first
