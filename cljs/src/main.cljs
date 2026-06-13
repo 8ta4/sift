@@ -164,15 +164,12 @@
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
     (when-not (empty? snapshot)
-      (set-lines buffer
-                 (map (partial setval* (srange 1 2) (render-mark action))
-                      (js->clj lines))
-                 range*)
       (transform ATOM
                  (comp (partial transform* :items #(merge % (setval MAP-VALS action snapshot)))
                        (partial setval* [:undos BEFORE-ELEM] {:snapshot snapshot
                                                               :cursor (parse-position cursor-position)}))
-                 state))
+                 state)
+      (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
          last
