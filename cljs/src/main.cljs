@@ -70,20 +70,14 @@
 (def modes
   #{"n" "v"})
 
-(defn set-lines
-  [buffer lines range*]
-  (.setOption buffer "modifiable" true)
-  (.setLines buffer
-             (clj->js lines)
-             (clj->js (zipmap [:start :end] range*)))
-  (.setOption buffer "modifiable" false))
-
 (defn render-buffer
   []
   (promesa/let [buffer (.-buffer (:nvim @state))]
-    (set-lines buffer
-               (map render-item (:items @state))
-               [0 -1])))
+    (.setOption buffer "modifiable" true)
+    (.setLines buffer
+               (clj->js (map render-item (:items @state)))
+               (clj->js {:start 0 :end -1}))
+    (.setOption buffer "modifiable" false)))
 
 (defn load
   []
