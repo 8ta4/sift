@@ -180,7 +180,11 @@ Yes. It'd be inconsistent not to restore the visibility toggles while restoring 
 
 > If I press `u` to undo a mark, can the cursor move?
 
-Yes. When you undo a mark, the cursor jumps back to the same row and column it was on when you set the mark. This helps you see if the undo worked.
+Yes.
+
+If you set the mark in Normal mode, the cursor jumps back to the row and column the cursor was on.
+
+If you set the mark in Visual mode, the cursor jumps back to the start of the visual selection. That way, it's easier to scan down and see the status of the items you just restored.
 
 > If I press `u` in Visual mode, does the visual selection disappear?
 
