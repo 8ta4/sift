@@ -175,15 +175,18 @@
 (defn undo
   []
   (when-not (empty? (:undos @state))
-    (transform ATOM
-               (comp (partial transform* :items #(->> @state
-                                                      :undos
-                                                      first
-                                                      :snapshot
-                                                      (merge %)))
-                     (partial setval* [:undos FIRST] NONE))
-               state)
-    (render-buffer)))
+    (promesa/let [window (.-window (:nvim @state))
+                  cursor* (:cursor (first (:undos @state)))]
+      (transform ATOM
+                 (comp (partial transform* :items #(->> @state
+                                                        :undos
+                                                        first
+                                                        :snapshot
+                                                        (merge %)))
+                       (partial setval* [:undos FIRST] NONE))
+                 state)
+      (render-buffer)
+      (set! (.-cursor window) (clj->js cursor*)))))
 
 (defn handle
   [key-name]
