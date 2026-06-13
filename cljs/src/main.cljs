@@ -65,7 +65,7 @@
   #{:a :c :d :x})
 
 (def actions
-  (union #{:<C-r> :s :u} mark-actions))
+  (union #{:r :s :u} mark-actions))
 
 (def modes
   #{"n" "v"})
@@ -87,7 +87,7 @@
             (request "nvim_buf_set_keymap"
                      (.-id buffer)
                      (name mode)
-                     action
+                     (get {"r" "<C-r>"} action action)
                      (str "<Cmd>:"
                           "Handle "
                           action
