@@ -15,6 +15,7 @@
 
 (defonce state
   (atom {:items (ordered-map)
+         :redos []
          :undos []}))
 
 (defn call-function
@@ -134,6 +135,14 @@
                                                     :text (strip-prefix line)}))
                             (.end socket)))))
 
+(defn mark*
+  [step]
+  (transform ATOM
+             (comp (partial setval* :redos [])
+                   (partial setval* [:undos BEFORE-ELEM] step)
+                   (partial transform* :items #(merge % (:after step))))
+             state))
+
 (defn mark
   [action]
   (promesa/let [buffer (.-buffer (:nvim @state))
@@ -149,21 +158,19 @@
                            (zipmap [:start :end])
                            clj->js
                            (.getLines buffer))
-                snapshot (->> lines
-                              js->clj
-                              (map strip-prefix)
-                              (select-keys (:items @state))
-                              (remove (comp (partial = action)
-                                            last))
-                              (into {}))
+                before (->> lines
+                            js->clj
+                            (map strip-prefix)
+                            (select-keys (:items @state))
+                            (remove (comp (partial = action)
+                                          last))
+                            (into {}))
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
-    (when-not (empty? snapshot)
-      (transform ATOM
-                 (comp (partial transform* :items #(merge % (setval MAP-VALS action snapshot)))
-                       (partial setval* [:undos BEFORE-ELEM] {:snapshot snapshot
-                                                              :cursor (first bounds)}))
-                 state)
+    (when-not (empty? before)
+      (mark* {:before before
+              :after (setval MAP-VALS action before)
+              :cursor (first bounds)})
       (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
@@ -173,24 +180,47 @@
          clj->js
          (set! (.-cursor window)))))
 
+(defn undo*
+  []
+  (transform ATOM
+             (comp (partial setval* [:redos BEFORE-ELEM] (first (:undos @state)))
+                   (partial setval* [:undos FIRST] NONE)
+                   (partial transform* :items #(->> @state
+                                                    :undos
+                                                    first
+                                                    :before
+                                                    (merge %))))
+             state))
+
 (defn undo
   []
   (when-not (empty? (:undos @state))
     (promesa/let [window (.-window (:nvim @state))
                   cursor* (:cursor (first (:undos @state)))]
-      (transform ATOM
-                 (comp (partial setval* [:undos FIRST] NONE)
-                       (partial transform* :items #(->> @state
-                                                        :undos
-                                                        first
-                                                        :snapshot
-                                                        (merge %))))
-                 state)
+      (undo*)
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
+(defn redo*
+  []
+  (transform ATOM
+             (comp (partial setval* [:undos BEFORE-ELEM] (first (:redos @state)))
+                   (partial setval* [:redos FIRST] NONE)
+                   (partial transform* :items #(->> @state
+                                                    :redos
+                                                    first
+                                                    :after
+                                                    (merge %))))
+             state))
+
 (defn redo
-  [])
+  []
+  (when-not (empty? (:redos @state))
+    (promesa/let [window (.-window (:nvim @state))
+                  cursor* (:cursor (first (:redos @state)))]
+      (redo*)
+      (render-buffer)
+      (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
 (defn handle
   [key-name]
