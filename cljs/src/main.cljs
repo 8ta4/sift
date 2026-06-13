@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS setval setval* srange transform transform*]]
+            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* srange transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -22,7 +22,7 @@
   (.then (.callFunction (:nvim @state) function-name (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
-(def parse
+(def parse-items
   (comp (partial into (ordered-map))
         (partial map (juxt identity (constantly :c)))
         (partial remove empty?)
@@ -33,7 +33,7 @@
   [target]
   (promesa/let [s (call-function "getreg" "+")]
     (->> s
-         parse
+         parse-items
          pr-str
          (spit (str target ".sift")))
     (.command (:nvim @state) (str "e " target ".sift"))))
@@ -70,13 +70,14 @@
 (def modes
   #{"n" "v"})
 
-(defn set-lines
-  [buffer lines range*]
-  (.setOption buffer "modifiable" true)
-  (.setLines buffer
-             (clj->js lines)
-             (clj->js (zipmap [:start :end] range*)))
-  (.setOption buffer "modifiable" false))
+(defn render-buffer
+  []
+  (promesa/let [buffer (.-buffer (:nvim @state))]
+    (.setOption buffer "modifiable" true)
+    (.setLines buffer
+               (clj->js (map render-item (:items @state)))
+               (clj->js {:start 0 :end -1}))
+    (.setOption buffer "modifiable" false)))
 
 (defn load
   []
@@ -99,12 +100,7 @@
       (setval [ATOM :items]
               (read-string {:readers {'ordered/map ordered-map}} (slurp path))
               state))
-    (promesa/let [buffer (.-buffer (:nvim @state))]
-      (set-lines buffer
-                 (->> @state
-                      :items
-                      (map render-item))
-                 [0 -1]))))
+    (render-buffer)))
 
 (defn get-references
   []
@@ -138,18 +134,21 @@
                                                     :text (strip-prefix line)}))
                             (.end socket)))))
 
+(def parse-position
+  (comp vec
+        (partial map dec)
+        drop-last
+        rest))
+
 (defn mark
   [action]
   (promesa/let [buffer (.-buffer (:nvim @state))
-                positions (all (map (partial call-function "getpos") ["." "v"]))
-                bounds (sort (map (comp vec
-                                        (partial map dec)
-                                        drop-last
-                                        rest)
-                                  positions))
+                cursor-position (call-function "getpos" ".")
+                selection-position (call-function "getpos" "v")
+                bounds (sort (map parse-position [cursor-position selection-position]))
                 range* (transform LAST inc (map first bounds))
                 lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
-                previous (->> lines
+                snapshot (->> lines
                               js->clj
                               (map strip-prefix)
                               (select-keys (:items @state))
@@ -158,15 +157,13 @@
                               (into {}))
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
-    (when-not (empty? previous)
-      (set-lines buffer
-                 (map (partial setval* (srange 1 2) (render-mark action))
-                      (js->clj lines))
-                 range*)
+    (when-not (empty? snapshot)
       (transform ATOM
-                 (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
-                       (partial setval* [:undos BEFORE-ELEM] previous))
-                 state))
+                 (comp (partial transform* :items #(merge % (setval MAP-VALS action snapshot)))
+                       (partial setval* [:undos BEFORE-ELEM] {:snapshot snapshot
+                                                              :cursor (parse-position cursor-position)}))
+                 state)
+      (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
          last
@@ -175,10 +172,28 @@
          clj->js
          (set! (.-cursor window)))))
 
+(defn undo
+  []
+  (when-not (empty? (:undos @state))
+    (promesa/let [window (.-window (:nvim @state))
+                  cursor* (:cursor (first (:undos @state)))]
+      (transform ATOM
+                 (comp (partial transform* :items #(->> @state
+                                                        :undos
+                                                        first
+                                                        :snapshot
+                                                        (merge %)))
+                       (partial setval* [:undos FIRST] NONE))
+                 state)
+      (render-buffer)
+      (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
+
 (defn handle
   [key-name]
-  (cond (= :s (keyword key-name)) (see)
-        ((keyword key-name) mark-actions) (mark (keyword key-name)))
+  (if ((keyword key-name) mark-actions) (mark (keyword key-name))
+      (case (keyword key-name)
+        :s (see)
+        :u (undo)))
   nil)
 
 (def chrome-hosts-directory
