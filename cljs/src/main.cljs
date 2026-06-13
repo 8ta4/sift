@@ -5,13 +5,13 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [AFTER-ELEM ATOM BEFORE-ELEM FIRST MAP-VALS setval setval* srange transform transform*]]
+            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS setval setval* srange transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
             [os :refer [homedir tmpdir]]
             [path :refer [join]]
-            [promesa.core :as promesa]))
+            [promesa.core :as promesa :refer [all]]))
 
 (defonce state
   (atom {:items (ordered-map)
@@ -51,14 +51,9 @@
 
 (defn register-command
   [plugin command-name f options]
-  (.registerCommand plugin command-name
-                    (fn
-                      ([args]
-                       (apply f (js->clj args :keywordize-keys true)))
-                      ([args range*]
-                       (apply f (setval AFTER-ELEM
-                                        (transform FIRST dec (js->clj range*))
-                                        (js->clj args :keywordize-keys true)))))
+  (.registerCommand plugin
+                    command-name
+                    #(apply f (js->clj % :keywordize-keys true))
                     (clj->js options)))
 
 (defn request
@@ -73,7 +68,7 @@
   (union #{:<C-r> :s :u} mark-actions))
 
 (def modes
-  #{:n :v})
+  #{"n" "v"})
 
 (defn set-lines
   [buffer lines range*]
@@ -93,9 +88,6 @@
                      (name mode)
                      action
                      (str "<Cmd>:"
-                          (if (= :n mode)
-                            ""
-                            "'<,'>")
                           "Handle "
                           action
                           "<CR>")
@@ -147,8 +139,15 @@
                             (.end socket)))))
 
 (defn mark
-  [action range*]
+  [action]
   (promesa/let [buffer (.-buffer (:nvim @state))
+                positions (all (map (partial call-function "getpos") ["." "v"]))
+                bounds (sort (map (comp vec
+                                        (partial map dec)
+                                        drop-last
+                                        rest)
+                                  positions))
+                range* (transform LAST inc (map first bounds))
                 lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
                 previous (->> lines
                               js->clj
@@ -177,9 +176,9 @@
            (set! (.-cursor window))))))
 
 (defn handle
-  [key-name range*]
+  [key-name]
   (cond (= :s (keyword key-name)) (see)
-        ((keyword key-name) mark-actions) (mark (keyword key-name) range*))
+        ((keyword key-name) mark-actions) (mark (keyword key-name)))
   nil)
 
 (def chrome-hosts-directory
@@ -216,7 +215,6 @@
   (register-command plugin "Sift" sift {:nargs 1
                                         :sync true})
   (register-command plugin "Handle" handle {:nargs 1
-                                            :range ""
                                             :sync true})
   (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://aobaoadfgfpeggekafmdlmgdondfnpdo"]})
   (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))
