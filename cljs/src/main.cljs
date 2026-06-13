@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
             [clojure.string :as string :refer [split-lines trim]]
-            [com.rpl.specter :refer [AFTER-ELEM ATOM FIRST MAP-VALS setval setval* srange transform transform*]]
+            [com.rpl.specter :refer [AFTER-ELEM ATOM BEFORE-ELEM FIRST MAP-VALS setval setval* srange transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -99,7 +99,8 @@
                           "Handle "
                           (name action)
                           "<CR>")
-                     {:silent true}))
+                     {:nowait true
+                      :silent true}))
           (cartesian-product modes actions))
     (.setOption buffer "buftype" "acwrite")
     (when (existsSync path)
@@ -155,7 +156,10 @@
                               (select-keys (:items @state))
                               (remove (comp (partial = action)
                                             last))
-                              (into {}))]
+                              (into {}))
+                mode (.-mode (:nvim @state))
+                window (.-window (:nvim @state))
+                cursor (.-cursor window)]
     (when-not (empty? previous)
       (set-lines buffer
                  (map (partial setval* (srange 1 2) (render-mark action))
@@ -163,8 +167,14 @@
                  range*)
       (transform ATOM
                  (comp (partial transform* :items #(merge % (setval MAP-VALS action previous)))
-                       (partial transform* :undos (partial cons previous)))
-                 state))))
+                       (partial setval* [:undos BEFORE-ELEM] previous))
+                 state))
+    (if (= "n" (:mode (js->clj mode :keywordize-keys true)))
+      (->> cursor
+           js->clj
+           (transform FIRST inc)
+           clj->js
+           (set! (.-cursor window))))))
 
 (defn handle
   [key-name range*]
