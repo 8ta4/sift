@@ -134,20 +134,21 @@
                                                     :text (strip-prefix line)}))
                             (.end socket)))))
 
-(def parse-position
-  (comp vec
-        (partial map dec)
-        drop-last
-        rest))
-
 (defn mark
   [action]
   (promesa/let [buffer (.-buffer (:nvim @state))
-                cursor-position (call-function "getpos" ".")
-                selection-position (call-function "getpos" "v")
-                bounds (sort (map parse-position [cursor-position selection-position]))
-                range* (transform LAST inc (map first bounds))
-                lines (.getLines buffer (clj->js (zipmap [:start :end] range*)))
+                positions (all (map (partial call-function "getpos") ["." "v"]))
+                bounds (sort (map (comp vec
+                                        (partial map dec)
+                                        drop-last
+                                        rest)
+                                  positions))
+                lines (->> bounds
+                           (map first)
+                           (transform LAST inc)
+                           (zipmap [:start :end])
+                           clj->js
+                           (.getLines buffer))
                 snapshot (->> lines
                               js->clj
                               (map strip-prefix)
@@ -161,7 +162,7 @@
       (transform ATOM
                  (comp (partial transform* :items #(merge % (setval MAP-VALS action snapshot)))
                        (partial setval* [:undos BEFORE-ELEM] {:snapshot snapshot
-                                                              :cursor (parse-position cursor-position)}))
+                                                              :cursor (first bounds)}))
                  state)
       (render-buffer))
     (request "nvim_input" "<Esc>")
