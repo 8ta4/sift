@@ -104,7 +104,13 @@
     (render-buffer)))
 
 (defn save
-  [])
+  []
+  (promesa/let [buffer (.-buffer (:nvim @state))
+                path (.-name buffer)]
+    (->> @state
+         :items
+         pr-str
+         (spit path))))
 
 (defn get-references
   []
