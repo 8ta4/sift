@@ -110,7 +110,8 @@
     (->> @state
          :items
          pr-str
-         (spit path))))
+         (spit path))
+    (.setOption buffer "modified" false)))
 
 (defn get-references
   []
