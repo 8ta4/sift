@@ -103,6 +103,9 @@
               state))
     (render-buffer)))
 
+(defn save
+  [])
+
 (defn get-references
   []
   (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
@@ -262,6 +265,8 @@
   (setval [ATOM :nvim] (.-nvim plugin) state)
   (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
                                                        :sync true}))
+  (.registerAutocmd plugin "BufWriteCmd" save (clj->js {:pattern "*.sift"
+                                                        :sync true}))
   (register-command plugin "Sift" sift {:nargs 1
                                         :sync true})
   (register-command plugin "Handle" handle {:nargs 1
