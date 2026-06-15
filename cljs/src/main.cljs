@@ -4,7 +4,7 @@
             [clojure.edn :refer [read-string]]
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
-            [clojure.string :as string :refer [split-lines trim]]
+            [clojure.string :refer [lower-case split-lines trim]]
             [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
@@ -15,7 +15,9 @@
 
 (defonce state
   (atom {:items (ordered-map)
+         :marks #{}
          :redos []
+         :toggles #{}
          :undos []}))
 
 (defn call-function
@@ -38,17 +40,6 @@
          pr-str
          (spit (str target ".sift")))
     (.command (:nvim @state) (str "e " target ".sift"))))
-
-(def render-mark
-  (comp #(string/replace % "c" " ")
-        name))
-
-(defn render-item
-  [item]
-  (str "["
-       (render-mark (val item))
-       "] "
-       (key item)))
 
 (defn register-command
   [plugin command-name f options]
@@ -74,12 +65,38 @@
 (def modes
   #{"n" "v"})
 
+; The commented-out version below causes `render-buffer` to take 100 ms or more on lists with 100,000 items.
+; (def render-mark
+;   (comp #(string/replace % "c" " ")
+;         name))
+(defn render-mark
+  [mark]
+  (if (= :c mark)
+    " "
+    (name mark)))
+
+(defn render-item
+  [item]
+  (str "["
+       (render-mark (val item))
+       "] "
+       (key item)))
+
+(defn visible?
+  [item]
+  (or (not ((:toggles @state) (val item)))
+      ((:marks @state) (key item))))
+
 (defn render-buffer
   []
   (promesa/let [buffer (.-buffer (:nvim @state))]
     (.setOption buffer "modifiable" true)
     (.setLines buffer
-               (clj->js (map render-item (:items @state)))
+               (->> @state
+                    :items
+                    (filter visible?)
+                    (map render-item)
+                    clj->js)
                (clj->js {:start 0 :end -1}))
     (.setOption buffer "modifiable" false)))
 
@@ -153,6 +170,12 @@
   (transform ATOM
              (comp (partial setval* :redos [])
                    (partial setval* [:undos BEFORE-ELEM] step)
+                   (->> step
+                        :after
+                        keys
+                        set
+                        (partial union)
+                        (partial transform* :marks))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
@@ -181,8 +204,8 @@
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
     (when-not (empty? before)
-      (mark* {:before before
-              :after (setval MAP-VALS action before)
+      (mark* {:after (setval MAP-VALS action before)
+              :before before
               :cursor (first bounds)})
       (render-buffer))
     (request "nvim_input" "<Esc>")
@@ -193,8 +216,30 @@
          clj->js
          (set! (.-cursor window)))))
 
+(defn toggle-member
+  [x coll]
+  ((if (coll x)
+     disj
+     conj)
+   coll
+   x))
+
+(def lower-case-keyword
+  (comp keyword
+        lower-case
+        name))
+
+(defn toggle*
+  [action]
+  (transform ATOM
+             (comp (partial setval* :marks #{})
+                   (partial transform* :toggles (partial toggle-member action)))
+             state))
+
 (defn toggle
-  [action])
+  [action]
+  (toggle* (lower-case-keyword action))
+  (render-buffer))
 
 (defn undo*
   []
