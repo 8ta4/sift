@@ -171,10 +171,7 @@
   (transform ATOM
              (comp (partial setval* :redos [])
                    (partial setval* [:undos BEFORE-ELEM] step)
-                   (->> step
-                        :added-overrides
-                        (partial union)
-                        (partial transform* :current-overrides))
+                   (partial transform* :current-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
@@ -208,7 +205,10 @@
               :cursor (first bounds)
               :toggles (:toggles @state)
               :added-overrides (difference (set (keys before)) (:previous-overrides @state))
-              :removed-overrides (difference (:previous-overrides @state) (set (keys before)))})
+              :removed-overrides (difference (:previous-overrides @state) (->> before
+                                                                               keys
+                                                                               set
+                                                                               (union (:current-overrides @state))))})
       (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
