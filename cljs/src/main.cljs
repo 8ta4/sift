@@ -65,6 +65,9 @@
 (def mark-actions
   #{:a :c :d :x})
 
+(def toggle-actions
+  #{:A :C :D :X})
+
 (def actions
   (union #{:r :s :u} mark-actions))
 
