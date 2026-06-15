@@ -4,7 +4,7 @@
             [clojure.edn :refer [read-string]]
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
-            [clojure.string :as string :refer [split-lines trim]]
+            [clojure.string :refer [split-lines trim]]
             [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
@@ -63,9 +63,14 @@
 (def modes
   #{"n" "v"})
 
-(def render-mark
-  (comp #(string/replace % "c" " ")
-        name))
+; (def render-mark
+;   (comp #(string/replace % "c" " ")
+;         name))
+(defn render-mark
+  [mark]
+  (if (= :c mark)
+    " "
+    (name mark)))
 
 (defn render-item
   [item]
