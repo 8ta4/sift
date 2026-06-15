@@ -247,6 +247,7 @@
   (transform ATOM
              (comp (partial setval* [:redos BEFORE-ELEM] step)
                    (partial setval* [:undos FIRST] NONE)
+                   (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:before step))))
              state))
 
@@ -267,6 +268,7 @@
   (transform ATOM
              (comp (partial setval* [:undos BEFORE-ELEM] step)
                    (partial setval* [:redos FIRST] NONE)
+                   (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
