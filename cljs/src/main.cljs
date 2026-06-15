@@ -193,8 +193,8 @@
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
     (when-not (empty? before)
-      (mark* {:before before
-              :after (setval MAP-VALS action before)
+      (mark* {:after (setval MAP-VALS action before)
+              :before before
               :cursor (first bounds)})
       (render-buffer))
     (request "nvim_input" "<Esc>")
