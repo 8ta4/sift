@@ -204,11 +204,15 @@
               :before before
               :cursor (first bounds)
               :toggles (:toggles @state)
-              :added-overrides (difference (set (keys before)) (:previous-overrides @state))
-              :removed-overrides (difference (:previous-overrides @state) (->> before
-                                                                               keys
-                                                                               set
-                                                                               (union (:current-overrides @state))))})
+              :added-overrides (-> before
+                                   keys
+                                   set
+                                   (difference (:previous-overrides @state)))
+              :removed-overrides (->> before
+                                      keys
+                                      set
+                                      (union (:current-overrides @state))
+                                      (difference (:previous-overrides @state)))})
       (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
