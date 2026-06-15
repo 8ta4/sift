@@ -15,6 +15,7 @@
 
 (defonce state
   (atom {:items (ordered-map)
+         :marks #{}
          :redos []
          :toggles #{}
          :undos []}))
@@ -165,6 +166,12 @@
   (transform ATOM
              (comp (partial setval* :redos [])
                    (partial setval* [:undos BEFORE-ELEM] step)
+                   (->> step
+                        :after
+                        keys
+                        set
+                        (partial union)
+                        (partial transform* :marks))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
