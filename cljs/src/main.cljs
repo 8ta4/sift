@@ -3,7 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.math.combinatorics :refer [cartesian-product]]
-            [clojure.set :refer [union]]
+            [clojure.set :refer [difference union]]
             [clojure.string :refer [lower-case split-lines trim]]
             [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
@@ -15,7 +15,8 @@
 
 (defonce state
   (atom {:items (ordered-map)
-         :marks #{}
+         :current-overrides #{}
+         :previous-overrides #{}
          :redos []
          :toggles #{}
          :undos []}))
@@ -85,7 +86,7 @@
 (defn visible?
   [item]
   (or (not ((:toggles @state) (val item)))
-      ((:marks @state) (key item))))
+      ((:current-overrides @state) (key item))))
 
 (defn render-buffer
   []
@@ -171,11 +172,9 @@
              (comp (partial setval* :redos [])
                    (partial setval* [:undos BEFORE-ELEM] step)
                    (->> step
-                        :after
-                        keys
-                        set
+                        :added-overrides
                         (partial union)
-                        (partial transform* :marks))
+                        (partial transform* :current-overrides))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
@@ -207,7 +206,9 @@
       (mark* {:after (setval MAP-VALS action before)
               :before before
               :cursor (first bounds)
-              :toggles (:toggles @state)})
+              :toggles (:toggles @state)
+              :added-overrides (difference (set (keys before)) (:previous-overrides @state))
+              :removed-overrides (difference (:previous-overrides @state) (set (keys before)))})
       (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
@@ -233,7 +234,7 @@
 (defn toggle*
   [action]
   (transform ATOM
-             (comp (partial setval* :marks #{})
+             (comp (partial setval* :current-overrides #{})
                    (partial transform* :toggles (partial toggle-member action)))
              state))
 
