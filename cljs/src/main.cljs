@@ -86,7 +86,12 @@
   (promesa/let [buffer (.-buffer (:nvim @state))]
     (.setOption buffer "modifiable" true)
     (.setLines buffer
-               (clj->js (map render-item (:items @state)))
+               (->> @state
+                    :items
+                    (remove (comp (:toggles @state)
+                                  val))
+                    (map render-item)
+                    clj->js)
                (clj->js {:start 0 :end -1}))
     (.setOption buffer "modifiable" false)))
 
