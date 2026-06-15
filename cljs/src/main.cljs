@@ -39,17 +39,6 @@
          (spit (str target ".sift")))
     (.command (:nvim @state) (str "e " target ".sift"))))
 
-(def render-mark
-  (comp #(string/replace % "c" " ")
-        name))
-
-(defn render-item
-  [item]
-  (str "["
-       (render-mark (val item))
-       "] "
-       (key item)))
-
 (defn register-command
   [plugin command-name f options]
   (.registerCommand plugin
@@ -73,6 +62,17 @@
 
 (def modes
   #{"n" "v"})
+
+(def render-mark
+  (comp #(string/replace % "c" " ")
+        name))
+
+(defn render-item
+  [item]
+  (str "["
+       (render-mark (val item))
+       "] "
+       (key item)))
 
 (defn render-buffer
   []
