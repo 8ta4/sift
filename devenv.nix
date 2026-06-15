@@ -50,7 +50,7 @@
     cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf ../rplugin && shadow-cljs release main
   '';
   scripts.run.exec = ''
-    cd "$DEVENV_ROOT" && nvim demo.sift
+    cd "$DEVENV_ROOT" && nvim sift/demo.sift
   '';
   scripts.log.exec = ''
     cd "$DEVENV_ROOT" && nvim +star "+te tail -F node.log -n +1"
