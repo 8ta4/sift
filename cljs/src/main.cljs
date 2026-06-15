@@ -65,8 +65,11 @@
 (def mark-actions
   #{:a :c :d :x})
 
+(def toggle-actions
+  #{:A :C :D :X})
+
 (def actions
-  (union #{:r :s :u} mark-actions))
+  (union #{:r :s :u} mark-actions toggle-actions))
 
 (def modes
   #{"n" "v"})
@@ -102,6 +105,16 @@
               (read-string {:readers {'ordered/map ordered-map}} (slurp path))
               state))
     (render-buffer)))
+
+(defn save
+  []
+  (promesa/let [buffer (.-buffer (:nvim @state))
+                path (.-name buffer)]
+    (->> @state
+         :items
+         pr-str
+         (spit path))
+    (.setOption buffer "modified" false)))
 
 (defn get-references
   []
@@ -180,6 +193,9 @@
          clj->js
          (set! (.-cursor window)))))
 
+(defn toggle
+  [action])
+
 (defn undo*
   []
   (transform ATOM
@@ -222,14 +238,19 @@
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
-(defn handle
-  [key-name]
-  (if ((keyword key-name) mark-actions) (mark (keyword key-name))
-      (case (keyword key-name)
-        :s (see)
-        :u (undo)
-        :r (redo)))
+(defn handle*
+  [action]
+  (cond (action mark-actions) (mark action)
+        (action toggle-actions) (toggle action)
+        :else (case action
+                :s (see)
+                :u (undo)
+                :r (redo)))
   nil)
+
+(def handle
+  (comp handle*
+        keyword))
 
 (def chrome-hosts-directory
 ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
@@ -262,6 +283,8 @@
   (setval [ATOM :nvim] (.-nvim plugin) state)
   (.registerAutocmd plugin "BufReadCmd" load (clj->js {:pattern "*.sift"
                                                        :sync true}))
+  (.registerAutocmd plugin "BufWriteCmd" save (clj->js {:pattern "*.sift"
+                                                        :sync true}))
   (register-command plugin "Sift" sift {:nargs 1
                                         :sync true})
   (register-command plugin "Handle" handle {:nargs 1
