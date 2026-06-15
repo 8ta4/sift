@@ -242,15 +242,11 @@
   (render-buffer))
 
 (defn undo*
-  []
+  [step]
   (transform ATOM
-             (comp (partial setval* [:redos BEFORE-ELEM] (first (:undos @state)))
+             (comp (partial setval* [:redos BEFORE-ELEM] step)
                    (partial setval* [:undos FIRST] NONE)
-                   (partial transform* :items #(->> @state
-                                                    :undos
-                                                    first
-                                                    :before
-                                                    (merge %))))
+                   (partial transform* :items #(merge % (:before step))))
              state))
 
 (defn undo
@@ -258,20 +254,19 @@
   (when-not (empty? (:undos @state))
     (promesa/let [window (.-window (:nvim @state))
                   cursor* (:cursor (first (:undos @state)))]
-      (undo*)
+      (-> @state
+          :undos
+          first
+          undo*)
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
 (defn redo*
-  []
+  [step]
   (transform ATOM
-             (comp (partial setval* [:undos BEFORE-ELEM] (first (:redos @state)))
+             (comp (partial setval* [:undos BEFORE-ELEM] step)
                    (partial setval* [:redos FIRST] NONE)
-                   (partial transform* :items #(->> @state
-                                                    :redos
-                                                    first
-                                                    :after
-                                                    (merge %))))
+                   (partial transform* :items #(merge % (:after step))))
              state))
 
 (defn redo
@@ -279,7 +274,10 @@
   (when-not (empty? (:redos @state))
     (promesa/let [window (.-window (:nvim @state))
                   cursor* (:cursor (first (:redos @state)))]
-      (redo*)
+      (-> @state
+          :redos
+          first
+          redo*)
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
