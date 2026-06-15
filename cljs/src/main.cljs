@@ -166,12 +166,17 @@
                                                     :text (strip-prefix line)}))
                             (.end socket)))))
 
+(defn assign
+  [apath k structure]
+  (setval apath (k structure) structure))
+
 (defn mark*
   [step]
   (transform ATOM
              (comp (partial setval* :redos [])
                    (partial setval* [:undos BEFORE-ELEM] step)
-                   (partial transform* :current-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
+                   (partial assign :current-overrides :previous-overrides)
+                   (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
