@@ -257,6 +257,8 @@
   (transform ATOM
              (comp (partial setval* [:redos BEFORE-ELEM] step)
                    (partial setval* [:undos FIRST] NONE)
+                   (partial assign :current-overrides :previous-overrides)
+                   (partial transform* :previous-overrides #(difference (union % (:removed-overrides step)) (:added-overrides step)))
                    (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:before step))))
              state))
@@ -278,6 +280,8 @@
   (transform ATOM
              (comp (partial setval* [:undos BEFORE-ELEM] step)
                    (partial setval* [:redos FIRST] NONE)
+                   (partial assign :current-overrides :previous-overrides)
+                   (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
                    (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:after step))))
              state))
