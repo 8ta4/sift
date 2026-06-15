@@ -166,15 +166,17 @@
                                                     :text (strip-prefix line)}))
                             (.end socket)))))
 
+(defn assign
+  [apath k structure]
+  (setval apath (k structure) structure))
+
 (defn mark*
   [step]
   (transform ATOM
              (comp (partial setval* :redos [])
                    (partial setval* [:undos BEFORE-ELEM] step)
-                   (->> step
-                        :added-overrides
-                        (partial union)
-                        (partial transform* :current-overrides))
+                   (partial assign :current-overrides :previous-overrides)
+                   (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
@@ -207,8 +209,15 @@
               :before before
               :cursor (first bounds)
               :toggles (:toggles @state)
-              :added-overrides (difference (set (keys before)) (:previous-overrides @state))
-              :removed-overrides (difference (:previous-overrides @state) (set (keys before)))})
+              :added-overrides (-> before
+                                   keys
+                                   set
+                                   (difference (:previous-overrides @state)))
+              :removed-overrides (->> before
+                                      keys
+                                      set
+                                      (union (:current-overrides @state))
+                                      (difference (:previous-overrides @state)))})
       (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
