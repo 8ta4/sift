@@ -229,12 +229,17 @@
         lower-case
         name))
 
-(defn toggle
+(defn toggle*
   [action]
   (transform ATOM
              (comp (partial setval* :marks #{})
-                   (partial transform* :toggles (partial toggle-member (lower-case-keyword action))))
+                   (partial transform* :toggles (partial toggle-member action)))
              state))
+
+(defn toggle
+  [action]
+  (toggle* (lower-case-keyword action))
+  (render-buffer))
 
 (defn undo*
   []
