@@ -82,6 +82,11 @@
        "] "
        (key item)))
 
+(defn visible?
+  [item]
+  (or (not ((:toggles @state) (val item)))
+      ((:marks @state) (key item))))
+
 (defn render-buffer
   []
   (promesa/let [buffer (.-buffer (:nvim @state))]
@@ -89,8 +94,7 @@
     (.setLines buffer
                (->> @state
                     :items
-                    (remove (comp (:toggles @state)
-                                  val))
+                    (filter visible?)
                     (map render-item)
                     clj->js)
                (clj->js {:start 0 :end -1}))
@@ -228,7 +232,8 @@
 (defn toggle
   [action]
   (transform ATOM
-             (partial transform* :toggles (partial toggle-member (lower-case-keyword action)))
+             (comp (partial setval* :marks #{})
+                   (partial transform* :toggles (partial toggle-member (lower-case-keyword action))))
              state))
 
 (defn undo*
