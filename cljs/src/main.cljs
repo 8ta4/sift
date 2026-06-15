@@ -235,14 +235,18 @@
       (render-buffer)
       (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
 
-(defn handle
-  [key-name]
-  (if ((keyword key-name) mark-actions) (mark (keyword key-name))
-      (case (keyword key-name)
+(defn handle*
+  [action]
+  (if (action mark-actions) (mark action)
+      (case action
         :s (see)
         :u (undo)
         :r (redo)))
   nil)
+
+(def handle
+  (comp handle*
+        keyword))
 
 (def chrome-hosts-directory
 ; https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging#:~:text=~/Library/Application%20Support/Google/Chrome/NativeMessagingHosts/com.my_company.my_application.json
