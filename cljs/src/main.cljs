@@ -199,6 +199,14 @@
          clj->js
          (set! (.-cursor window)))))
 
+(defn toggle-member
+  [x coll]
+  ((if (coll x)
+     disj
+     conj)
+   coll
+   x))
+
 (defn toggle
   [action])
 
