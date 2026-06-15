@@ -15,6 +15,7 @@
 
 (defonce state
   (atom {:items (ordered-map)
+         :toggles #{}
          :redos []
          :undos []}))
 
@@ -208,7 +209,10 @@
    x))
 
 (defn toggle
-  [action])
+  [action]
+  (transform ATOM
+             (partial transform* :toggles (partial toggle-member action))
+             state))
 
 (defn undo*
   []
