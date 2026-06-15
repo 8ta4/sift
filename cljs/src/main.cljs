@@ -4,7 +4,7 @@
             [clojure.edn :refer [read-string]]
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [union]]
-            [clojure.string :refer [split-lines trim]]
+            [clojure.string :refer [lower-case split-lines trim]]
             [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
@@ -208,10 +208,15 @@
    coll
    x))
 
+(def lower-case-keyword
+  (comp keyword
+        lower-case
+        name))
+
 (defn toggle
   [action]
   (transform ATOM
-             (partial transform* :toggles (partial toggle-member action))
+             (partial transform* :toggles (partial toggle-member (lower-case-keyword action)))
              state))
 
 (defn undo*
