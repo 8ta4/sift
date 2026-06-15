@@ -206,7 +206,8 @@
     (when-not (empty? before)
       (mark* {:after (setval MAP-VALS action before)
               :before before
-              :cursor (first bounds)})
+              :cursor (first bounds)
+              :toggles (:toggles @state)})
       (render-buffer))
     (request "nvim_input" "<Esc>")
     (->> bounds
