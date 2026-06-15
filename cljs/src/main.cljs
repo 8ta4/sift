@@ -63,6 +63,7 @@
 (def modes
   #{"n" "v"})
 
+; The commented-out version below causes `render-buffer` to take 100 ms or more on lists with 100,000 items.
 ; (def render-mark
 ;   (comp #(string/replace % "c" " ")
 ;         name))
