@@ -69,7 +69,7 @@
   #{:A :C :D :X})
 
 (def actions
-  (union #{:r :s :u} mark-actions))
+  (union #{:r :s :u} mark-actions toggle-actions))
 
 (def modes
   #{"n" "v"})
@@ -193,6 +193,9 @@
          clj->js
          (set! (.-cursor window)))))
 
+(defn toggle
+  [action])
+
 (defn undo*
   []
   (transform ATOM
@@ -237,11 +240,12 @@
 
 (defn handle*
   [action]
-  (if (action mark-actions) (mark action)
-      (case action
-        :s (see)
-        :u (undo)
-        :r (redo)))
+  (cond (action mark-actions) (mark action)
+        (action toggle-actions) (toggle action)
+        :else (case action
+                :s (see)
+                :u (undo)
+                :r (redo)))
   nil)
 
 (def handle
