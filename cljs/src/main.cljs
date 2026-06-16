@@ -87,16 +87,17 @@
   (or (not ((:toggles @state) (val item)))
       ((:current-overrides @state) (key item))))
 
+(def format-items
+  (comp clj->js
+        (partial map render-item)
+        (partial filter visible?)))
+
 (defn render-buffer
   []
   (promesa/let [buffer (.-buffer (:nvim @state))]
     (.setOption buffer "modifiable" true)
     (.setLines buffer
-               (->> @state
-                    :items
-                    (filter visible?)
-                    (map render-item)
-                    clj->js)
+               (format-items (:items @state))
                (clj->js {:start 0 :end -1}))
     (.setOption buffer "modifiable" false)))
 
@@ -252,10 +253,24 @@
 (defn toggle
   [action]
   (toggle* (lower-case-keyword action))
-  (render-buffer)
   (promesa/let [line (.getLine (:nvim @state))]
     (when-not (empty? line)
-      ((:order @state) (strip-prefix line)))))
+      (promesa/let [buffer (.-buffer (:nvim @state))
+                    index ((:order @state) (strip-prefix line))]
+        (.setOption buffer "modifiable" true)
+        (.setLines buffer
+                   (->> @state
+                        :items
+                        (drop index)
+                        format-items)
+                   (clj->js {:start index :end -1}))
+        (.setLines buffer
+                   (->> @state
+                        :items
+                        (take index)
+                        format-items)
+                   (clj->js {:start 0 :end index}))
+        (.setOption buffer "modifiable" false)))))
 
 (defn undo*
   [step]
