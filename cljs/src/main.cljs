@@ -158,14 +158,19 @@
   [line]
   (subs line 4))
 
+(defn get-text
+  []
+  (promesa/let [line (.getLine (:nvim @state))]
+    (strip-prefix line)))
+
 (defn see
   []
   (promesa/let [references (get-references)
-                line (.getLine (:nvim @state))
+                text (get-text)
                 socket (createConnection socket-path)]
     (.on socket "connect" (fn []
                             (.write socket (encode {:references references
-                                                    :text (strip-prefix line)}))
+                                                    :text text}))
                             (.end socket)))))
 
 (defn assign
