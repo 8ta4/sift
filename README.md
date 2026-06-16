@@ -179,6 +179,14 @@ You're in Insert mode.
 
 Tap `<Esc>`.
 
+> Will hitting `<Enter>` in the filter window add a new line?
+
+No.
+
+If you hit `<Enter>`, the filter window switches to Normal mode and the list window gets focus. `<Enter>` is a quick way to say you're done typing.
+
+That stops you from accidentally making a multi‑line regex.
+
 > If the filter window is empty, does `sift` apply an empty regex?
 
 No.
