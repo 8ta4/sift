@@ -171,12 +171,6 @@ Think "input".
 
 This plays into your muscle memory for typing after you press `i` to enter Insert mode.
 
-> Can I go to Normal mode in the filter window from the list window?
-
-Yes.
-
-You can use Neovim's window navigation keybindings.
-
 > If I hit `i` to bring up the filter window, which mode am I in?
 
 You're in Insert mode.

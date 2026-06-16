@@ -334,7 +334,7 @@ Sure, the filter window staying open takes up a few lines. But you can only glan
 
 If the filter window were closed, the active regex could be displayed somewhere else to remind you why items are hidden. But this would add extra UI clutter and make your eyes jump around depending on whether you're viewing or editing the `regex`.
 
-Additionally, leaving the window open lets you leverage your existing Neovim window navigation keybindings to jump down to the filter window in Normal mode.
+Additionally, leaving the window open lets you leverage your existing Neovim window navigation keybindings to jump down to the filter window.
 
 > Does opening the filter window clear the regex filter I'm using?
 
