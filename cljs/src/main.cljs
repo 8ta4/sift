@@ -120,7 +120,8 @@
     (when (existsSync path)
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
-                   (comp (partial setval* :order (zipmap (keys items) (range)))
+                   (comp (partial setval* :item-keys (vec (keys items)))
+                         (partial setval* :order (zipmap (keys items) (range)))
                          (partial setval* :items items))
                    state)))
     (render-buffer)))
