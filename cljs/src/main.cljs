@@ -119,9 +119,11 @@
           (cartesian-product modes (map name actions)))
     (.setOption buffer "buftype" "acwrite")
     (when (existsSync path)
-      (setval [ATOM :items]
-              (read-string {:readers {'ordered/map ordered-map}} (slurp path))
-              state))
+      (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
+        (transform ATOM
+                   (comp (partial setval* :order (zipmap (keys items) (range)))
+                         (partial setval* :items items))
+                   state)))
     (render-buffer)))
 
 (defn save
