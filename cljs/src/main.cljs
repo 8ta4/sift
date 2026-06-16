@@ -158,20 +158,16 @@
   [line]
   (subs line 4))
 
-(defn get-text
-  []
-  (promesa/let [line (.getLine (:nvim @state))]
-    (strip-prefix line)))
-
 (defn see
   []
-  (promesa/let [references (get-references)
-                text (get-text)
-                socket (createConnection socket-path)]
-    (.on socket "connect" (fn []
-                            (.write socket (encode {:references references
-                                                    :text text}))
-                            (.end socket)))))
+  (promesa/let [line (.getLine (:nvim @state))]
+    (when-not (empty? line)
+      (promesa/let [references (get-references)
+                    socket (createConnection socket-path)]
+        (.on socket "connect" (fn []
+                                (.write socket (encode {:references references
+                                                        :text (strip-prefix line)}))
+                                (.end socket)))))))
 
 (defn assign
   [apath k structure]
@@ -258,8 +254,9 @@
   [action]
   (toggle* (lower-case-keyword action))
   (render-buffer)
-  (promesa/let [text (get-text)]
-    ((:order @state) text)))
+  (promesa/let [line (.getLine (:nvim @state))]
+    (when-not (empty? line)
+      ((:order @state) (strip-prefix line)))))
 
 (defn undo*
   [step]
