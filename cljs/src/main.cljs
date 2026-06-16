@@ -14,12 +14,11 @@
             [promesa.core :as promesa :refer [all]]))
 
 (defonce state
-  (atom {:items (ordered-map)
+  (atom {:toggles #{}
          :current-overrides #{}
          :previous-overrides #{}
-         :redos []
-         :toggles #{}
-         :undos []}))
+         :undos []
+         :redos []}))
 
 (defn call-function
   [function-name & args]
@@ -119,9 +118,12 @@
           (cartesian-product modes (map name actions)))
     (.setOption buffer "buftype" "acwrite")
     (when (existsSync path)
-      (setval [ATOM :items]
-              (read-string {:readers {'ordered/map ordered-map}} (slurp path))
-              state))
+      (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
+        (transform ATOM
+                   (comp (partial setval* :item-keys (vec (keys items)))
+                         (partial setval* :order (zipmap (keys items) (range)))
+                         (partial setval* :items items))
+                   state)))
     (render-buffer)))
 
 (defn save
@@ -158,13 +160,14 @@
 
 (defn see
   []
-  (promesa/let [references (get-references)
-                line (.getLine (:nvim @state))
-                socket (createConnection socket-path)]
-    (.on socket "connect" (fn []
-                            (.write socket (encode {:references references
-                                                    :text (strip-prefix line)}))
-                            (.end socket)))))
+  (promesa/let [line (.getLine (:nvim @state))]
+    (when-not (empty? line)
+      (promesa/let [references (get-references)
+                    socket (createConnection socket-path)]
+        (.on socket "connect" (fn []
+                                (.write socket (encode {:references references
+                                                        :text (strip-prefix line)}))
+                                (.end socket)))))))
 
 (defn assign
   [apath k structure]
@@ -250,7 +253,10 @@
 (defn toggle
   [action]
   (toggle* (lower-case-keyword action))
-  (render-buffer))
+  (render-buffer)
+  (promesa/let [line (.getLine (:nvim @state))]
+    (when-not (empty? line)
+      ((:order @state) (strip-prefix line)))))
 
 (defn undo*
   [step]
@@ -267,13 +273,19 @@
   []
   (when-not (empty? (:undos @state))
     (promesa/let [window (.-window (:nvim @state))
-                  cursor* (:cursor (first (:undos @state)))]
+                  cursor* (-> @state
+                              :undos
+                              first
+                              :cursor)]
       (-> @state
           :undos
           first
           undo*)
       (render-buffer)
-      (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
+      (->> cursor*
+           (transform FIRST inc)
+           clj->js
+           (set! (.-cursor window))))))
 
 (defn redo*
   [step]
@@ -290,13 +302,19 @@
   []
   (when-not (empty? (:redos @state))
     (promesa/let [window (.-window (:nvim @state))
-                  cursor* (:cursor (first (:redos @state)))]
+                  cursor* (-> @state
+                              :redos
+                              first
+                              :cursor)]
       (-> @state
           :redos
           first
           redo*)
       (render-buffer)
-      (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
+      (->> cursor*
+           (transform FIRST inc)
+           clj->js
+           (set! (.-cursor window))))))
 
 (defn handle*
   [action]
