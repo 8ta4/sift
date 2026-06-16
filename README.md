@@ -157,7 +157,7 @@ For peace of mind, `sift` logs every time you change an item's mark status. If N
 
 Press `D` in Normal or Visual mode inside the list window.
 
-You can use the uppercase keys `A`, `X` and `C` the same way to flip the visibility of the items marked with each one.
+You can use the uppercase keys `A`, `C` and `X` the same way to flip the visibility of the items marked with each one.
 
 > How do I filter the list by regex?
 
