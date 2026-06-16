@@ -163,13 +163,19 @@ You can use the uppercase keys `A`, `X` and `C` the same way to flip the visibil
 
 Drop your regex into the filter window.
 
-> How do I open the filter window from the list window?
+> How do I switch to Insert mode in the filter window from the list window?
 
 Press `i` in Normal or Visual mode.
 
 Think "input".
 
 This plays into your muscle memory for typing after you press `i` to enter Insert mode.
+
+> Can I go to Normal mode in the filter window from the list window?
+
+Yes.
+
+You can use Neovim's window navigation keybindings.
 
 > If I hit `i` to bring up the filter window, which mode am I in?
 

@@ -324,11 +324,17 @@ Yes.
 
 The filter window is just there to filter the list window.
 
-> If I close the filter window, will the list window close too?
+> If I close the filter window, will the list window also close?
 
-No.
+Yes.
 
-Once you've set the regex filter, you can close the filter window to get more screen space.
+`sift` sees the list window and filter window as one unified interface.
+
+Sure, the filter window staying open takes up a few lines. But you can only glance at so much info anyway.
+
+If the filter window were closed, the active regex could be displayed somewhere else to remind you why items are hidden. But this would add extra UI clutter and make your eyes jump around depending on whether you're viewing or editing the `regex`.
+
+Additionally, leaving the window open lets you leverage your existing Neovim window navigation keybindings to jump down to the filter window in Normal mode.
 
 > Does opening the filter window clear the regex filter I'm using?
 
