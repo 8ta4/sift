@@ -262,6 +262,18 @@ Excel works like that.
 
 Yes. If the item the cursor will land on has enough columns, the cursor will stay on the same column. Otherwise, the cursor snaps to the last column.
 
+> If I close the list window, does the filter window close too?
+
+Yes.
+
+The filter window is just there to filter the list window.
+
+> If I close the filter window, will the list window close too?
+
+No.
+
+Once you've set the regex filter, you can close the filter window to get more screen space.
+
 > Does opening the filter window clear the regex filter I'm using?
 
 No. The filter window comes preloaded with the active regex.
