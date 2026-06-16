@@ -267,13 +267,19 @@
   []
   (when-not (empty? (:undos @state))
     (promesa/let [window (.-window (:nvim @state))
-                  cursor* (:cursor (first (:undos @state)))]
+                  cursor* (-> @state
+                              :undos
+                              first
+                              :cursor)]
       (-> @state
           :undos
           first
           undo*)
       (render-buffer)
-      (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
+      (->> cursor*
+           (transform FIRST inc)
+           clj->js
+           (set! (.-cursor window))))))
 
 (defn redo*
   [step]
@@ -290,13 +296,19 @@
   []
   (when-not (empty? (:redos @state))
     (promesa/let [window (.-window (:nvim @state))
-                  cursor* (:cursor (first (:redos @state)))]
+                  cursor* (-> @state
+                              :redos
+                              first
+                              :cursor)]
       (-> @state
           :redos
           first
           redo*)
       (render-buffer)
-      (set! (.-cursor window) (clj->js (transform FIRST inc cursor*))))))
+      (->> cursor*
+           (transform FIRST inc)
+           clj->js
+           (set! (.-cursor window))))))
 
 (defn handle*
   [action]
