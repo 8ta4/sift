@@ -257,7 +257,9 @@
 (defn toggle
   [action]
   (toggle* (lower-case-keyword action))
-  (render-buffer))
+  (render-buffer)
+  (promesa/let [text (get-text)]
+    ((:order @state) text)))
 
 (defn undo*
   [step]
