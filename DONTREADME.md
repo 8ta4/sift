@@ -12,17 +12,23 @@ Yes.
 
 > Can I block ads on the reference pages?
 
-Yes. You can pair `sift` with [uBO Lite](https://github.com/uBlockOrigin/uBOL-home) to kill ads.
+Yes.
+
+You can pair `sift` with [uBO Lite](https://github.com/uBlockOrigin/uBOL-home) to kill ads.
 
 ### Latency
 
 > Is there a latency target for opening references?
 
-No. `sift` hands that off to your browser. So latency depends on external factors like your network and the target website.
+No.
+
+`sift` hands that off to your browser. So latency depends on external factors like your network and the target website.
 
 > Is there a latency target for filtering?
 
-Yes. The goal is under 0.1 seconds for lists with up to 100,000 items.
+Yes.
+
+The goal is under 0.1 seconds for lists with up to 100,000 items.
 
 [0.1 second is about the limit for having the user feel that the system is reacting instantaneously](https://www.nngroup.com/articles/response-times-3-important-limits/#:~:text=0.1%20second%20is%20about%20the%20limit%20for%20having%20the%20user%20feel%20that%20the%20system%20is%20reacting%20instantaneously).
 
@@ -30,7 +36,9 @@ Yes. The goal is under 0.1 seconds for lists with up to 100,000 items.
 
 > Can I use dark mode on reference pages?
 
-Yes. You can pair `sift` with [Dark Reader](https://github.com/darkreader/darkreader).
+Yes.
+
+You can pair `sift` with [Dark Reader](https://github.com/darkreader/darkreader).
 
 ## Architecture
 
@@ -62,11 +70,15 @@ Instead, the extension connects to a native messaging host to talk to the plugin
 
 > Will the service worker connected to a native host go inactive?
 
-No. "[Connecting to a native messaging host using chrome.runtime.connectNative() will keep a service worker alive.](<https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle#:~:text=Connecting%20to%20a%20native%20messaging%20host%20using%20chrome.runtime.connectNative()%20will%20keep%20a%20service%20worker%20alive.>)"
+No.
+
+"[Connecting to a native messaging host using chrome.runtime.connectNative() will keep a service worker alive.](<https://developer.chrome.com/docs/extensions/develop/concepts/service-workers/lifecycle#:~:text=Connecting%20to%20a%20native%20messaging%20host%20using%20chrome.runtime.connectNative()%20will%20keep%20a%20service%20worker%20alive.>)"
 
 > Does the plugin connect to a WebSocket on the Native Messaging host?
 
-No. That would mean opening a network port, which is a security risk.
+No.
+
+That would mean opening a network port, which is a security risk.
 
 Instead, it just uses a UNIX domain socket.
 
@@ -80,39 +92,55 @@ No.
 
 > Can `sift` remove duplicate items?
 
-Yes. `sift` trims each line's string and removes duplicates while building a list.
+Yes.
+
+`sift` trims each line's string and removes duplicates while building a list.
 
 ### Navigating
 
 > Does `sift` show lists in a browser?
 
-No. `sift` shows lists in Neovim. You get to leverage Neovim's performance and reuse your configuration.
+No.
+
+`sift` shows lists in Neovim. You get to leverage Neovim's performance and reuse your configuration.
 
 > Does Neovim stay focused when I open a reference?
 
-Yes. If the focus shifts to the browser when you open a reference, it'd break your sifting flow.
+Yes.
+
+If the focus shifts to the browser when you open a reference, it'd break your sifting flow.
 
 > If I open references, can the cursor move to another row?
 
-No. This way, you won't have to go back and mark the item after opening references.
+No.
+
+This way, you won't have to go back and mark the item after opening references.
 
 > If I hit `s` in Visual mode, does the visual selection disappear?
 
-No. Preserving the visual selection allows you to press `d` to mark the highlighted block without having to select the items again.
+No.
+
+Preserving the visual selection allows you to press `d` to mark the highlighted block without having to select the items again.
 
 > Does `sift` use AppleScript to open reference tabs?
 
-No. `sift` uses a Chrome extension.
+No.
+
+`sift` uses a Chrome extension.
 
 Automating Google Chrome via AppleScript forces the browser window to grab focus when a tab is updated.
 
 > Can I use [Vimium](https://github.com/philc/vimium) to navigate within reference windows?
 
-Yes. You can pair `sift` with Vimium to get around.
+Yes.
+
+You can pair `sift` with Vimium to get around.
 
 > Does `sift` open multiple references in the same window?
 
-No. `sift` gives each reference source its own window. That way, you can glance at multiple references at once.
+No.
+
+`sift` gives each reference source its own window. That way, you can glance at multiple references at once.
 
 > If I close the `sift` window and hit `s`, will `sift` open a new one?
 
@@ -120,7 +148,9 @@ Yes.
 
 > If you press `s` while the window opened by `sift` is still open, will `sift` open a new window?
 
-No. This will stop the windows count from getting out of hand.
+No.
+
+This will stop the windows count from getting out of hand.
 
 > If you press `s` while the window opened by `sift` is still open, which tab of that window does `sift` use to open a reference?
 
@@ -130,7 +160,9 @@ Changing tabs could look jarring.
 
 > Can `sift` close tabs?
 
-Yes. If you press `s` when you have a bunch of tabs open in a window that `sift` has opened, `sift` will open a reference in the active tab and close the other tabs in the window.
+Yes.
+
+If you press `s` when you have a bunch of tabs open in a window that `sift` has opened, `sift` will open a reference in the active tab and close the other tabs in the window.
 
 When you manually open one additional tab in the same window, you can press `⌘ + Shift + [` to navigate to the reference tab. Even when you have a bunch of extra tabs open in the same window, you can still press `⌘ + 1` to go to the reference tab.
 
@@ -150,15 +182,21 @@ You'll probably want to go to the next item anyway.
 
 > If I press `d` to mark an item, can the cursor move to another column?
 
-Yes. `sift` wants the cursor to stay on the same column. But the new row might not have enough columns. If that happens, the cursor jumps to the row's last column.
+Yes.
+
+`sift` wants the cursor to stay on the same column. But the new row might not have enough columns. If that happens, the cursor jumps to the row's last column.
 
 > If I hit `d` in Visual mode, does the visual selection vanish?
 
-Yes. If the visual selection remained active, the advancing cursor might stretch the selection box downward.
+Yes.
+
+If the visual selection remained active, the advancing cursor might stretch the selection box downward.
 
 > If I've pressed `D` to hide done items, does marking an item as done make it disappear?
 
-No. The item remains visible for the following reasons:
+No.
+
+The item remains visible for the following reasons:
 
 - If an item disappeared and caused the items below it to move up, the sudden layout shift would be jarring.
 
@@ -166,17 +204,23 @@ No. The item remains visible for the following reasons:
 
 > If I press `u` to undo a mark, does the visibility of items get restored?
 
-Yes. When you undo a mark, the items go back to being visible or hidden just like they were when you first marked them.
+Yes.
+
+When you undo a mark, the items go back to being visible or hidden just like they were when you first marked them.
 
 If `sift` didn't do this, marks could revert without visual feedback.
 
 > If I hit `u` to undo a mark, will the regex filter come back?
 
-Yes. If the regex filter didn't revert, the undone items appearing on the screen might conflict with your current search input.
+Yes.
+
+If the regex filter didn't revert, the undone items appearing on the screen might conflict with your current search input.
 
 > If I hit `u` to undo a mark, will the visibility toggles be restored?
 
-Yes. It'd be inconsistent not to restore the visibility toggles while restoring the regex filter.
+Yes.
+
+It'd be inconsistent not to restore the visibility toggles while restoring the regex filter.
 
 > If I press `u` to undo a mark, can the cursor move?
 
@@ -188,13 +232,17 @@ If you set the mark in Visual mode, the cursor jumps back to the start of the vi
 
 > If I press `u` in Visual mode, does the visual selection disappear?
 
-Yes. Undo rewinds the cursor. Neovim anchors visual selections to the cursor. If you jump the cursor across the file, the selection box might get stretched. Dropping the selection prevents this jarring behavior.
+Yes.
+
+Undo rewinds the cursor. Neovim anchors visual selections to the cursor. If you jump the cursor across the file, the selection box might get stretched. Dropping the selection prevents this jarring behavior.
 
 ### Saving
 
 > After I save and close a buffer, does `sift` retain my undo history?
 
-Yes. `sift` drops your undo history into `vim.fn.stdpath("state") .. "/sift/"`.
+Yes.
+
+`sift` drops your undo history into `vim.fn.stdpath("state") .. "/sift/"`.
 
 Storing your undo history here stops your working directory from getting messy. To figure out the exact path on your machine, run:
 
@@ -204,11 +252,15 @@ Storing your undo history here stops your working directory from getting messy. 
 
 > If I mark an item and Neovim crashes before I save, does `sift` keep recovery logs?
 
-Yes. `sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
+Yes.
+
+`sift` drops these recovery logs into `vim.fn.stdpath("state") .. "/sift/"`.
 
 > When I reopen a file, will `sift` reapply the same filters as before?
 
-No. The items that were unhidden at the time of closing remain unhidden. Excel works like this.
+No.
+
+The items that were unhidden at the time of closing remain unhidden. Excel works like this.
 
 But `sift` keeps track of the filters you used before closing the file. If you add another filter after reopening the file, the combined effect is just like you never reopened it.
 
@@ -220,7 +272,9 @@ But the scroll position could change. Neovim behaves like this with other types 
 
 > If I open the file again, will the cursor land on the same column as before?
 
-Yes. Neovim acts like this with other file types.
+Yes.
+
+Neovim acts like this with other file types.
 
 ### Filtering
 
@@ -230,7 +284,9 @@ The filter window is a split one. A split window lets you quickly hop between th
 
 > If the filter doesn't hide the item under the cursor, will the cursor stay on that same item?
 
-Yes. Excel works like this.
+Yes.
+
+Excel works like this.
 
 If the cursor kept jumping around, it'd be disorienting.
 
@@ -276,12 +332,18 @@ Once you've set the regex filter, you can close the filter window to get more sc
 
 > Does opening the filter window clear the regex filter I'm using?
 
-No. The filter window comes preloaded with the active regex.
+No.
+
+The filter window comes preloaded with the active regex.
 
 > If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
 
-Yes. `sift` will grab the most recent valid regex from the filter window and use it to filter the list.
+Yes.
+
+`sift` will grab the most recent valid regex from the filter window and use it to filter the list.
 
 > If the filter window's regex matches nothing, does the list window show an empty list?
 
-Yes. Displaying an empty list might look pointless. But some items become visible when you press `D` or other keys. So, an empty list might actually be useful.
+Yes.
+
+Displaying an empty list might look pointless. But some items become visible when you press `D` or other keys. So, an empty list might actually be useful.

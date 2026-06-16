@@ -68,7 +68,9 @@ In Visual mode, `s` opens the references only for the item under the cursor.
 
 > Can I add more references?
 
-Yes. Put another reference in your `lazy.nvim` setup:
+Yes.
+
+Put another reference in your `lazy.nvim` setup:
 
 ```lua
 {
@@ -87,41 +89,59 @@ Yes. Put another reference in your `lazy.nvim` setup:
 
 > In Normal mode, how do I mark an item as done?
 
-Press `d` while the cursor is on the item. Think "done".
+Press `d` while the cursor is on the item.
+
+Think "done".
 
 Of the available home row keys `a`, `s` and `d`, `d` is probably the easiest to press. This makes it ideal for what is likely your most frequent marking action.
 
 > In Normal mode, how do I flag an item for a second pass?
 
-Press `a` while the cursor is on the item. Think "again". Seriously. Think again.
+Press `a` while the cursor is on the item.
+
+Think "again". Seriously. Think again.
 
 Of the available home row keys `a`, `s` and `d`, `a` is likely the hardest to type.
 
 > In Normal mode, how do I unmark an item?
 
-Press `c` while the cursor is on the item. Think "clear". Clear?
+Press `c` while the cursor is on the item.
+
+Think "clear". Clear?
 
 > In Normal mode, how do I soft delete an item from the list?
 
-Press `x` while the cursor is on the item. Think "x out". Since `x` removes a character in Neovim, using `x` here feels natural.
+Press `x` while the cursor is on the item.
+
+Think "x out".
+
+Since `x` removes a character in Neovim, using `x` here feels natural.
 
 > How do I undo a mark?
 
-Press `u` in Normal or Visual mode inside the list window. This rolls back your last marking action for `d`, `s`, `a`, `c` or `x`.
+Press `u` in Normal or Visual mode inside the list window.
+
+This rolls back your last marking action for `d`, `s`, `a`, `c` or `x`.
 
 > How do I redo a mark?
 
-Press `<C-r>` in Normal or Visual mode inside the list window. This reapplies a marking action you undid.
+Press `<C-r>` in Normal or Visual mode inside the list window.
+
+This reapplies a marking action you undid.
 
 > Can I mark several items as done with a single keystroke?
 
-Yes. If your visual selection covers several items, hitting `d` will mark them as done. `a`, `c` and `x` work similarly.
+Yes.
+
+If your visual selection covers several items, hitting `d` will mark them as done. `a`, `c` and `x` work similarly.
 
 ### Saving
 
 > How do I save?
 
-Press `:w` in Normal mode. That tells `sift` to write your changes to the file.
+Press `:w` in Normal mode.
+
+That tells `sift` to write your changes to the file.
 
 Manual saving is used so you can:
 
@@ -135,7 +155,9 @@ For peace of mind, `sift` logs every time you change an item's mark status. If N
 
 > How do I toggle the visibility of items marked as done?
 
-Press `D` in Normal or Visual mode inside the list window. You can use the uppercase keys `A`, `X` and `C` the same way to flip the visibility of the items marked with each one.
+Press `D` in Normal or Visual mode inside the list window.
+
+You can use the uppercase keys `A`, `X` and `C` the same way to flip the visibility of the items marked with each one.
 
 > How do I filter the list by regex?
 
@@ -143,7 +165,11 @@ Drop your regex into the filter window.
 
 > How do I open the filter window from the list window?
 
-Press `i` in Normal or Visual mode. Think "input". This plays into your muscle memory for typing after you press `i` to enter Insert mode.
+Press `i` in Normal or Visual mode.
+
+Think "input".
+
+This plays into your muscle memory for typing after you press `i` to enter Insert mode.
 
 > If I hit `i` to bring up the filter window, which mode am I in?
 
@@ -155,6 +181,8 @@ Tap `<Esc>`.
 
 > If the filter window is empty, does `sift` apply an empty regex?
 
-No. An empty string is treated as having no regex filter.
+No.
+
+An empty string is treated as having no regex filter.
 
 In theory, an empty regex only matches an empty item, which doesn't exist when `sift` builds the list.
