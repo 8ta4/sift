@@ -15,11 +15,11 @@
 
 (defonce state
   (atom {:items (ordered-map)
+         :toggles #{}
          :current-overrides #{}
          :previous-overrides #{}
-         :redos []
-         :toggles #{}
-         :undos []}))
+         :undos []
+         :redos []}))
 
 (defn call-function
   [function-name & args]
