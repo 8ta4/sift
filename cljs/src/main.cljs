@@ -14,8 +14,7 @@
             [promesa.core :as promesa :refer [all]]))
 
 (defonce state
-  (atom {:items (ordered-map)
-         :toggles #{}
+  (atom {:toggles #{}
          :current-overrides #{}
          :previous-overrides #{}
          :undos []
