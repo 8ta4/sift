@@ -127,10 +127,13 @@
                         :silent true}))
             (cartesian-product modes (map name actions)))
       (.setOption list-buffer "buftype" "acwrite")
+; If winfixheight is not set, opening and closing other windows may alter the filter-window height.
+      (.setOption filter-window "winfixheight" true)
       (run! #(.setOption % "winfixbuf" true) #{list-window filter-window})
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
-                   #(merge % {:items items
+                   #(merge % {:buffer list-buffer
+                              :items items
                               :order (zipmap (keys items) (range))
                               :window {:filter (.-id filter-window)
                                        :list (.-id list-window)}})
@@ -150,19 +153,27 @@
 (defn close*
   [id]
   (condp = id
-    (:list (:window @state)) (promesa/let [windows (.-windows (:nvim @state))]
+    (:list (:window @state)) (promesa/let [modified (.getOption (:buffer @state) "modified")
+                                           loaded (.-loaded (:buffer @state))
+                                           windows (.-windows (:nvim @state))]
+; https://github.com/neovim/neovim/blob/a1da5d1f141f58158ffc33aa2c84e790633b57c9/runtime/doc/editing.txt#L1159-L1160
+; When closed with `:q!`, the buffer is unloaded. When closed with `:q`, the buffer remains loaded.
+                               (if (and modified loaded)
+                                 (promesa/let [window (.openWindow (:nvim @state) (:buffer @state) true (clj->js {:split "above"}))]
+                                   (request "nvim_win_set_height" (:filter (:window @state)) 1)
+                                   (setval [ATOM :window :list] (.-id window) state))
 ; Checking `(count (js->clj windows))` is nondeterministic.
 ; The list window being closed may or may not still be present in Neovim's window list.
-                               (if (->> @state
-                                        :window
-                                        vals
-                                        set
-                                        (subset? (->> windows
-                                                      js->clj
-                                                      (map #(.-id %))
-                                                      set)))
-                                 (.quit (:nvim @state))
-                                 (request "nvim_win_close" (:filter (:window @state)) true)))
+                                 (if (->> @state
+                                          :window
+                                          vals
+                                          set
+                                          (subset? (->> windows
+                                                        js->clj
+                                                        (map #(.-id %))
+                                                        set)))
+                                   (.quit (:nvim @state))
+                                   (request "nvim_win_close" (:filter (:window @state)) true))))
 
     nil)
   nil)
