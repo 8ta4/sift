@@ -127,6 +127,7 @@
                         :silent true}))
             (cartesian-product modes (map name actions)))
       (.setOption list-buffer "buftype" "acwrite")
+; If winfixheight is not set, opening and closing other windows may alter the filter-window height.
       (.setOption filter-window "winfixheight" true)
       (run! #(.setOption % "winfixbuf" true) #{list-window filter-window})
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
