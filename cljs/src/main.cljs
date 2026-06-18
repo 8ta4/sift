@@ -151,6 +151,8 @@
   [id]
   (condp = id
     (:list (:window @state)) (promesa/let [windows (.-windows (:nvim @state))]
+; Checking `(count (js->clj windows))` is nondeterministic.
+; The list window being closed may or may not still be present in Neovim's window list.
                                (if (->> @state
                                         :window
                                         vals
