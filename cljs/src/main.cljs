@@ -152,13 +152,16 @@
 (defn close*
   [id]
   (condp = id
-    (:list (:window @state)) (promesa/let [list-buffer (:list (:buffer @state))
-                                           current-buffer (.-buffer (:nvim @state))
+    (:list (:window @state)) (promesa/let [current-buffer (.-buffer (:nvim @state))
                                            modified (.getOption current-buffer "modified")
                                            windows (.-windows (:nvim @state))]
                                (if (and modified
 ; Checking if the close command is forced or not.
-                                        (= (.-id list-buffer) (.-id current-buffer)))
+                                        (-> @state
+                                            :buffer
+                                            :list
+                                            .-id
+                                            (= (.-id current-buffer))))
                                  (promesa/let [window (.openWindow (:nvim @state) current-buffer true (clj->js {:split "above"}))]
                                    (request "nvim_win_set_height" (:filter (:window @state)) 1)
                                    (setval [ATOM :window :list] (.-id window) state))
