@@ -103,11 +103,12 @@
 
 (defn load
   []
-  (promesa/let [buffer (.-buffer (:nvim @state))
-                path (.-name buffer)]
+  (promesa/let [list-buffer (.-buffer (:nvim @state))
+                path (.-name list-buffer)
+                filter-buffer (.createBuffer (:nvim @state) false true)]
     (run! (fn [[mode action]]
             (request "nvim_buf_set_keymap"
-                     (.-id buffer)
+                     (.-id list-buffer)
                      (name mode)
                      (get {"r" "<C-r>"} action action)
                      (str "<Cmd>:"
@@ -117,13 +118,19 @@
                      {:nowait true
                       :silent true}))
           (cartesian-product modes (map name actions)))
-    (.setOption buffer "buftype" "acwrite")
+    (.setOption list-buffer "buftype" "acwrite")
     (when (existsSync path)
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
                    (comp (partial setval* :order (zipmap (keys items) (range)))
                          (partial setval* :items items))
                    state)))
+    (.openWindow (:nvim @state)
+                 filter-buffer
+                 false
+                 (clj->js {:height 1
+                           :split "below"
+                           :style "minimal"}))
     (render-buffer)))
 
 (defn save
@@ -135,6 +142,13 @@
          pr-str
          (spit path))
     (.setOption buffer "modified" false)))
+
+(defn close*
+  [id])
+
+(def close
+  (comp close*
+        parse-long))
 
 (defn get-references
   []
@@ -377,6 +391,9 @@
                                                        :sync true}))
   (.registerAutocmd plugin "BufWriteCmd" save (clj->js {:pattern "*.sift"
                                                         :sync true}))
+  (.registerAutocmd plugin "WinClosed" close (clj->js {:eval "expand('<amatch>')"
+                                                       :pattern "*"
+                                                       :sync true}))
   (register-command plugin "Sift" sift {:nargs 1
                                         :sync true})
   (register-command plugin "Handle" handle {:nargs 1
