@@ -143,6 +143,9 @@
          (spit path))
     (.setOption buffer "modified" false)))
 
+(defn close
+  [])
+
 (defn get-references
   []
   (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
@@ -384,6 +387,9 @@
                                                        :sync true}))
   (.registerAutocmd plugin "BufWriteCmd" save (clj->js {:pattern "*.sift"
                                                         :sync true}))
+  (.registerAutocmd plugin "WinClosed" close (clj->js {:eval "expand('<amatch>')"
+                                                       :pattern "*"
+                                                       :sync true}))
   (register-command plugin "Sift" sift {:nargs 1
                                         :sync true})
   (register-command plugin "Handle" handle {:nargs 1
