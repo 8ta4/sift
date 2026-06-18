@@ -104,34 +104,37 @@
 (defn load
   []
   (promesa/let [list-buffer (.-buffer (:nvim @state))
-                path (.-name list-buffer)
-                filter-buffer (.createBuffer (:nvim @state) false true)]
-    (run! (fn [[mode action]]
-            (request "nvim_buf_set_keymap"
-                     (.-id list-buffer)
-                     (name mode)
-                     (get {"r" "<C-r>"} action action)
-                     (str "<Cmd>:"
-                          "Handle "
-                          action
-                          "<CR>")
-                     {:nowait true
-                      :silent true}))
-          (cartesian-product modes (map name actions)))
-    (.setOption list-buffer "buftype" "acwrite")
+                list-window (.-window (:nvim @state))
+                filter-buffer (.createBuffer (:nvim @state) false true)
+                filter-window (.openWindow (:nvim @state)
+                                           filter-buffer
+                                           false
+                                           (clj->js {:height 1
+                                                     :split "below"
+                                                     :style "minimal"}))
+                path (.-name list-buffer)]
     (when (existsSync path)
+      (run! (fn [[mode action]]
+              (request "nvim_buf_set_keymap"
+                       (.-id list-buffer)
+                       (name mode)
+                       (get {"r" "<C-r>"} action action)
+                       (str "<Cmd>:"
+                            "Handle "
+                            action
+                            "<CR>")
+                       {:nowait true
+                        :silent true}))
+            (cartesian-product modes (map name actions)))
+      (.setOption list-buffer "buftype" "acwrite")
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
-                   (comp (partial setval* :order (zipmap (keys items) (range)))
+                   (comp #(merge % {:list-window (.-id list-window)
+                                    :filter-window (.-id filter-window)})
+                         (partial setval* :order (zipmap (keys items) (range)))
                          (partial setval* :items items))
-                   state)))
-    (.openWindow (:nvim @state)
-                 filter-buffer
-                 false
-                 (clj->js {:height 1
-                           :split "below"
-                           :style "minimal"}))
-    (render-buffer)))
+                   state))
+      (render-buffer))))
 
 (defn save
   []
