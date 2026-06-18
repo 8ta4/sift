@@ -127,6 +127,7 @@
                         :silent true}))
             (cartesian-product modes (map name actions)))
       (.setOption list-buffer "buftype" "acwrite")
+      (run! #(.setOption % "winfixbuf" true) #{list-window filter-window})
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
                    (comp (partial setval* :window {:filter (.-id filter-window)
