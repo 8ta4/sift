@@ -147,7 +147,20 @@
     (.setOption buffer "modified" false)))
 
 (defn close*
-  [id])
+  [id]
+  (condp = id
+    (:list (:window @state)) (promesa/let [buffer (.-buffer (:nvim @state))
+                                           modified (.getOption buffer "modified")
+                                           windows (.-windows (:nvim @state))]
+                               (if modified
+                                 (promesa/do)
+                                 (if (->> windows
+                                          js->clj
+                                          count
+                                          (= 2))
+                                   (.quit (:nvim @state))
+                                   (request "nvim_win_close" (:filter (:window @state)) true))))
+    nil))
 
 (def close
   (comp close*
