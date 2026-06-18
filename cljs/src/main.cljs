@@ -104,34 +104,37 @@
 (defn load
   []
   (promesa/let [list-buffer (.-buffer (:nvim @state))
-                path (.-name list-buffer)
-                filter-buffer (.createBuffer (:nvim @state) false true)]
-    (run! (fn [[mode action]]
-            (request "nvim_buf_set_keymap"
-                     (.-id list-buffer)
-                     (name mode)
-                     (get {"r" "<C-r>"} action action)
-                     (str "<Cmd>:"
-                          "Handle "
-                          action
-                          "<CR>")
-                     {:nowait true
-                      :silent true}))
-          (cartesian-product modes (map name actions)))
-    (.setOption list-buffer "buftype" "acwrite")
+                list-window (.-window (:nvim @state))
+                filter-buffer (.createBuffer (:nvim @state) false true)
+                filter-window (.openWindow (:nvim @state)
+                                           filter-buffer
+                                           false
+                                           (clj->js {:height 1
+                                                     :split "below"
+                                                     :style "minimal"}))
+                path (.-name list-buffer)]
     (when (existsSync path)
+      (run! (fn [[mode action]]
+              (request "nvim_buf_set_keymap"
+                       (.-id list-buffer)
+                       (name mode)
+                       (get {"r" "<C-r>"} action action)
+                       (str "<Cmd>:"
+                            "Handle "
+                            action
+                            "<CR>")
+                       {:nowait true
+                        :silent true}))
+            (cartesian-product modes (map name actions)))
+      (.setOption list-buffer "buftype" "acwrite")
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
-                   (comp (partial setval* :order (zipmap (keys items) (range)))
+                   (comp (partial setval* :window {:filter (.-id filter-window)
+                                                   :list (.-id list-window)})
+                         (partial setval* :order (zipmap (keys items) (range)))
                          (partial setval* :items items))
-                   state)))
-    (.openWindow (:nvim @state)
-                 filter-buffer
-                 false
-                 (clj->js {:height 1
-                           :split "below"
-                           :style "minimal"}))
-    (render-buffer)))
+                   state))
+      (render-buffer))))
 
 (defn save
   []
@@ -144,7 +147,23 @@
     (.setOption buffer "modified" false)))
 
 (defn close*
-  [id])
+  [id]
+  (condp = id
+    (:list (:window @state)) (promesa/let [buffer (.-buffer (:nvim @state))
+                                           modified (.getOption buffer "modified")
+                                           windows (.-windows (:nvim @state))]
+                               (if modified
+                                 (promesa/let [window (.openWindow (:nvim @state) buffer true (clj->js {:split "above"}))]
+                                   (request "nvim_win_set_height" (:filter (:window @state)) 1)
+                                   (setval [ATOM :window :list] (.-id window) state))
+                                 (if (->> windows
+                                          js->clj
+                                          count
+                                          (= 2))
+                                   (.quit (:nvim @state))
+                                   (request "nvim_win_close" (:filter (:window @state)) true))))
+    nil)
+  nil)
 
 (def close
   (comp close*
