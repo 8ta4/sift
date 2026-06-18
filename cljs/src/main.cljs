@@ -143,8 +143,12 @@
          (spit path))
     (.setOption buffer "modified" false)))
 
-(defn close
-  [])
+(defn close*
+  [id])
+
+(def close
+  (comp close*
+        parse-long))
 
 (defn get-references
   []
