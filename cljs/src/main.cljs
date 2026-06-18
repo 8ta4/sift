@@ -155,6 +155,7 @@
                                            loaded (.-loaded (:buffer @state))
                                            windows (.-windows (:nvim @state))]
 ; https://github.com/neovim/neovim/blob/a1da5d1f141f58158ffc33aa2c84e790633b57c9/runtime/doc/editing.txt#L1159-L1160
+; When closed with `:q!`, the buffer is unloaded. When closed with `:q`, the buffer remains loaded.
                                (if (and modified loaded)
                                  (promesa/let [window (.openWindow (:nvim @state) (:buffer @state) true (clj->js {:split "above"}))]
                                    (request "nvim_win_set_height" (:filter (:window @state)) 1)
