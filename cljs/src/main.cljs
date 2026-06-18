@@ -130,10 +130,10 @@
       (run! #(.setOption % "winfixbuf" true) #{list-window filter-window})
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
-                   (comp (partial setval* :window {:filter (.-id filter-window)
-                                                   :list (.-id list-window)})
-                         (partial setval* :order (zipmap (keys items) (range)))
-                         (partial setval* :items items))
+                   #(merge % {:items items
+                              :order (zipmap (keys items) (range))
+                              :window {:filter (.-id filter-window)
+                                       :list (.-id list-window)}})
                    state))
       (render-buffer))))
 
