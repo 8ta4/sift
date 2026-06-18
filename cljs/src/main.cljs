@@ -3,7 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.math.combinatorics :refer [cartesian-product]]
-            [clojure.set :refer [difference union]]
+            [clojure.set :refer [difference subset? union]]
             [clojure.string :refer [lower-case split-lines trim]]
             [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
@@ -150,7 +150,18 @@
 (defn close*
   [id]
   (condp = id
-    (:list (:window @state)) (.quit (:nvim @state))
+    (:list (:window @state)) (promesa/let [windows (.-windows (:nvim @state))]
+                               (if (->> @state
+                                        :window
+                                        vals
+                                        set
+                                        (subset? (->> windows
+                                                      js->clj
+                                                      (map #(.-id %))
+                                                      set)))
+                                 (.quit (:nvim @state))
+                                 (request "nvim_win_close" (:filter (:window @state)) true)))
+
     nil)
   nil)
 
