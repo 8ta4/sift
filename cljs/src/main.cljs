@@ -130,8 +130,7 @@
       (run! #(.setOption % "winfixbuf" true) #{list-window filter-window})
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
-                   #(merge % {:buffer {:filter filter-buffer
-                                       :list list-buffer}
+                   #(merge % {:buffer list-buffer
                               :items items
                               :order (zipmap (keys items) (range))
                               :window {:filter (.-id filter-window)
@@ -159,7 +158,6 @@
 ; Checking if the close command is forced or not.
                                         (-> @state
                                             :buffer
-                                            :list
                                             .-id
                                             (= (.-id current-buffer))))
                                  (promesa/let [window (.openWindow (:nvim @state) current-buffer true (clj->js {:split "above"}))]
