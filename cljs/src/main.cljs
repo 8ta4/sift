@@ -153,14 +153,17 @@
                                            modified (.getOption buffer "modified")
                                            windows (.-windows (:nvim @state))]
                                (if modified
-                                 (promesa/do)
+                                 (promesa/let [window (.openWindow (:nvim @state) buffer true (clj->js {:split "above"}))]
+                                   (request "nvim_win_set_height" (:filter (:window @state)) 1)
+                                   (setval [ATOM :window :list] (.-id window) state))
                                  (if (->> windows
                                           js->clj
                                           count
                                           (= 2))
                                    (.quit (:nvim @state))
                                    (request "nvim_win_close" (:filter (:window @state)) true))))
-    nil))
+    nil)
+  nil)
 
 (def close
   (comp close*
