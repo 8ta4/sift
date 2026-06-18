@@ -159,7 +159,7 @@
                                  (if (->> windows
                                           js->clj
                                           count
-                                          (= 2))
+                                          (= 1))
                                    (.quit (:nvim @state))
                                    (request "nvim_win_close" (:filter (:window @state)) true))))
     nil)
