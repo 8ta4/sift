@@ -127,12 +127,13 @@
                         :silent true}))
             (cartesian-product modes (map name actions)))
       (.setOption list-buffer "buftype" "acwrite")
+      (run! #(.setOption % "winfixbuf" true) #{list-window filter-window})
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
-                   (comp (partial setval* :window {:filter (.-id filter-window)
-                                                   :list (.-id list-window)})
-                         (partial setval* :order (zipmap (keys items) (range)))
-                         (partial setval* :items items))
+                   #(merge % {:items items
+                              :order (zipmap (keys items) (range))
+                              :window {:filter (.-id filter-window)
+                                       :list (.-id list-window)}})
                    state))
       (render-buffer))))
 
@@ -149,19 +150,7 @@
 (defn close*
   [id]
   (condp = id
-    (:list (:window @state)) (promesa/let [buffer (.-buffer (:nvim @state))
-                                           modified (.getOption buffer "modified")
-                                           windows (.-windows (:nvim @state))]
-                               (if modified
-                                 (promesa/let [window (.openWindow (:nvim @state) buffer true (clj->js {:split "above"}))]
-                                   (request "nvim_win_set_height" (:filter (:window @state)) 1)
-                                   (setval [ATOM :window :list] (.-id window) state))
-                                 (if (->> windows
-                                          js->clj
-                                          count
-                                          (= 1))
-                                   (.quit (:nvim @state))
-                                   (request "nvim_win_close" (:filter (:window @state)) true))))
+    (:list (:window @state)) (.quit (:nvim @state))
     nil)
   nil)
 
