@@ -129,8 +129,8 @@
       (.setOption list-buffer "buftype" "acwrite")
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
-                   (comp #(merge % {:list-window (.-id list-window)
-                                    :filter-window (.-id filter-window)})
+                   (comp (partial setval* :window {:filter (.-id filter-window)
+                                                   :list (.-id list-window)})
                          (partial setval* :order (zipmap (keys items) (range)))
                          (partial setval* :items items))
                    state))
