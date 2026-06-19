@@ -178,9 +178,12 @@
   (promesa/let [modified (-> @state
                              :buffer
                              :list
-                             (.getOption "modified"))]
+                             (.getOption "modified"))
+                command (call-function "histget" ":" -1)
+                block (and modified
+                           (not= \! (last (trim command))))]
     (condp = id
-      (:list (:window @state)) (if modified
+      (:list (:window @state)) (if block
                                  (promesa/let [window (.openWindow (:nvim @state)
                                                                    (:list (:buffer @state))
                                                                    true
@@ -190,7 +193,7 @@
                                    (setval [ATOM :window :list] (.-id window) state)
                                    (show-error))
                                  (close-other :filter))
-      (:filter (:window @state)) (if modified
+      (:filter (:window @state)) (if block
                                    (promesa/let [window (-> @state
                                                             :buffer
                                                             :filter
