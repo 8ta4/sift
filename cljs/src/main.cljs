@@ -178,37 +178,41 @@
 
 (defn close*
   [id]
-  (promesa/let [modified (-> @state
-                             :buffer
-                             :list
-                             (.getOption "modified"))
-                command (call-function "histget" ":" -1)
-                block (->> command
-                           trim
-                           last
-                           (not= \!)
-                           (and modified))]
-    (condp = id
-      (:list (:window @state)) (if block
-                                 (promesa/let [window (.openWindow (:nvim @state)
-                                                                   (:list (:buffer @state))
-                                                                   true
-                                                                   (clj->js {:split "above"}))]
-                                   (request "nvim_win_set_height" (:filter (:window @state)) 1)
-                                   (.setOption window "winfixbuf" true)
-                                   (setval [ATOM :window :list] (.-id window) state)
-                                   (show-error))
-                                 (close-other :filter))
-      (:filter (:window @state)) (if block
-                                   (promesa/let [window (-> @state
-                                                            :buffer
-                                                            :filter
-                                                            (open-filter-window true))]
-                                     (setval [ATOM :window :filter] (.-id window) state)
-                                     (show-error))
-                                   (close-other :list))
-
-      nil)))
+  (when ((-> @state
+             :window
+             vals
+             set)
+         id)
+    (promesa/let [modified (-> @state
+                               :buffer
+                               :list
+                               (.getOption "modified"))
+                  command (call-function "histget" ":" -1)
+                  block (->> command
+                             trim
+                             last
+                             (not= \!)
+                             (and modified))]
+      (if block
+        (promesa/do
+          (if (->> @state
+                   :window
+                   :list
+                   (= id))
+            (promesa/let [window (.openWindow (:nvim @state)
+                                              (:list (:buffer @state))
+                                              true
+                                              (clj->js {:split "above"}))]
+              (request "nvim_win_set_height" (:filter (:window @state)) 1)
+              (.setOption window "winfixbuf" true)
+              (setval [ATOM :window :list] (.-id window) state))
+            (promesa/let [window (-> @state
+                                     :buffer
+                                     :filter
+                                     (open-filter-window true))]
+              (setval [ATOM :window :filter] (.-id window) state)))
+          (show-error))
+        (close-other :filter)))))
 
 (def close
   (comp close*
