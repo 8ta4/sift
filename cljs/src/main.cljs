@@ -84,8 +84,10 @@
 
 (defn visible?
   [item]
-  (or (not ((:toggles @state) (val item)))
-      ((:current-overrides @state) (key item))))
+  (and (or (not ((:toggles @state) (val item)))
+           ((:current-overrides @state) (key item)))
+       (or (not (:regex @state))
+           (.test (:regex @state) (key item)))))
 
 (def format-items
   (comp clj->js
