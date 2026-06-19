@@ -332,7 +332,8 @@
   [action]
   (toggle* (lower-case-keyword action))
   (promesa/let [line (.getLine (:nvim @state))]
-    (when-not (empty? line)
+    (if (empty? line)
+      (render-buffer)
       (promesa/let [buffer (.-buffer (:nvim @state))
                     index ((:order @state) (strip-prefix line))]
         (.setOption buffer "modifiable" true)
