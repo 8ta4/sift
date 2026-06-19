@@ -382,7 +382,9 @@
                    (partial transform* :previous-overrides #(difference (union % (:removed-overrides step)) (:added-overrides step)))
                    (partial setval* :regex (or (:regex step)
                                                NONE))
-                   (partial setval* :toggles (:toggles step))
+                   #(merge % (select-one (submap #{:toggles
+                                                   :query})
+                                         step))
                    (partial transform* :items #(merge % (:before step))))
              state))
 
@@ -413,7 +415,9 @@
                                                NONE))
                    (partial assign :current-overrides :previous-overrides)
                    (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
-                   (partial setval* :toggles (:toggles step))
+                   #(merge % (select-one (submap #{:toggles
+                                                   :query})
+                                         step))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
