@@ -436,8 +436,7 @@
                  :change change
                  :s see
                  :u undo
-                 :r redo)))
-  nil)
+                 :r redo))))
 
 (def handle
   (comp handle*
