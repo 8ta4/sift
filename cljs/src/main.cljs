@@ -421,7 +421,12 @@
            (set! (.-cursor window))))))
 
 (defn change
-  [])
+  []
+  (promesa/let [lines (-> @state
+                          :buffer
+                          :filter
+                          .getLines)]
+    (first (js->clj lines))))
 
 (defn handle*
   [action]
