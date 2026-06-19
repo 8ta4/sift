@@ -3,7 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.math.combinatorics :refer [cartesian-product]]
-            [clojure.set :refer [difference subset? union]]
+            [clojure.set :refer [difference union]]
             [clojure.string :refer [lower-case split-lines trim]]
             [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
@@ -136,6 +136,8 @@
             (cartesian-product modes (map name actions)))
       (.setOption list-buffer "buftype" "acwrite")
       (.setOption list-window "winfixbuf" true)
+      (request "nvim_create_autocmd" "TextChangedI" (clj->js {:buf (.-id filter-buffer)
+                                                              :command (str "Handle " (name :change))}))
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
                    #(merge % {:buffer {:filter filter-buffer
@@ -160,59 +162,50 @@
 (defn close-other
   [k]
   (promesa/let [windows (.-windows (:nvim @state))]
-; Checking `(count (js->clj windows))` is nondeterministic.
-; The list window being closed may or may not still be present in Neovim's window list.
-    (if (->> @state
-             :window
-             vals
-             set
-             (subset? (->> windows
-                           js->clj
-                           (map #(.-id %))
-                           set)))
+    (if (->> windows
+             js->clj
+             count
+             (= 2))
       (.quit (:nvim @state))
       (request "nvim_win_close" (k (:window @state)) true))))
 
+(defn show-error
+  []
+  (.errWriteLine (:nvim @state) "E37: No write since last change"))
+
 (defn close*
   [id]
-  (condp = id
-    (:list (:window @state)) (promesa/let [modified (-> @state
-                                                        :buffer
-                                                        :list
-                                                        (.getOption "modified"))
-                                           loaded (-> @state
-                                                      :buffer
-                                                      :list
-                                                      .-loaded)]
-; https://github.com/neovim/neovim/blob/a1da5d1f141f58158ffc33aa2c84e790633b57c9/runtime/doc/editing.txt#L1159-L1160
-; When closed with `:q!`, the buffer is unloaded. When closed with `:q`, the buffer remains loaded.
-                               (if (and modified loaded)
+  (promesa/let [modified (-> @state
+                             :buffer
+                             :list
+                             (.getOption "modified"))
+                command (call-function "histget" ":" -1)
+                block (->> command
+                           trim
+                           last
+                           (not= \!)
+                           (and modified))]
+    (condp = id
+      (:list (:window @state)) (if block
                                  (promesa/let [window (.openWindow (:nvim @state)
                                                                    (:list (:buffer @state))
                                                                    true
                                                                    (clj->js {:split "above"}))]
                                    (request "nvim_win_set_height" (:filter (:window @state)) 1)
                                    (.setOption window "winfixbuf" true)
-                                   (setval [ATOM :window :list] (.-id window) state))
-                                 (close-other :filter)))
-    (:filter (:window @state)) (promesa/let [modified (-> @state
-                                                          :buffer
-                                                          :list
-                                                          (.getOption "modified"))
-                                             loaded (-> @state
-                                                        :buffer
-                                                        :filter
-                                                        .-loaded)]
-                                 (if (and modified loaded)
+                                   (setval [ATOM :window :list] (.-id window) state)
+                                   (show-error))
+                                 (close-other :filter))
+      (:filter (:window @state)) (if block
                                    (promesa/let [window (-> @state
                                                             :buffer
                                                             :filter
                                                             (open-filter-window true))]
-                                     (setval [ATOM :window :filter] (.-id window) state))
-                                   (close-other :list)))
+                                     (setval [ATOM :window :filter] (.-id window) state)
+                                     (show-error))
+                                   (close-other :list))
 
-    nil)
-  nil)
+      nil)))
 
 (def close
   (comp close*
@@ -412,15 +405,23 @@
            clj->js
            (set! (.-cursor window))))))
 
+(defn change
+  []
+  (promesa/let [lines (-> @state
+                          :buffer
+                          :filter
+                          .getLines)]
+    (first (js->clj lines))))
+
 (defn handle*
   [action]
   (cond (action mark-actions) (mark action)
         (action toggle-actions) (toggle action)
-        :else (case action
-                :s (see)
-                :u (undo)
-                :r (redo)))
-  nil)
+        :else ((case action
+                 :change change
+                 :s see
+                 :u undo
+                 :r redo))))
 
 (def handle
   (comp handle*
