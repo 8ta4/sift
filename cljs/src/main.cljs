@@ -289,19 +289,21 @@
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
     (when-not (empty? before)
-      (mark* {:after (setval MAP-VALS action before)
-              :before before
-              :cursor (first bounds)
-              :toggles (:toggles @state)
-              :added-overrides (-> before
-                                   keys
-                                   set
-                                   (difference (:previous-overrides @state)))
-              :removed-overrides (->> before
-                                      keys
-                                      set
-                                      (union (:current-overrides @state))
-                                      (difference (:previous-overrides @state)))})
+      (mark* (merge {:after (setval MAP-VALS action before)
+                     :before before
+                     :cursor (first bounds)
+                     :added-overrides (-> before
+                                          keys
+                                          set
+                                          (difference (:previous-overrides @state)))
+                     :removed-overrides (->> before
+                                             keys
+                                             set
+                                             (union (:current-overrides @state))
+                                             (difference (:previous-overrides @state)))}
+                    (select-one (submap #{:regex
+                                          :toggles})
+                                @state)))
       (render-full))
     (request "nvim_input" "<Esc>")
     (->> bounds
