@@ -3,7 +3,7 @@
             [cljs-node-io.core :refer [make-parents slurp spit]]
             [clojure.edn :refer [read-string]]
             [clojure.math.combinatorics :refer [cartesian-product]]
-            [clojure.set :refer [difference subset? union]]
+            [clojure.set :refer [difference union]]
             [clojure.string :refer [lower-case split-lines trim]]
             [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
