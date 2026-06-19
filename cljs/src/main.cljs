@@ -175,12 +175,12 @@
 
 (defn close*
   [id]
-  (condp = id
-    (:list (:window @state)) (promesa/let [modified (-> @state
-                                                        :buffer
-                                                        :list
-                                                        (.getOption "modified"))]
-                               (if modified
+  (promesa/let [modified (-> @state
+                             :buffer
+                             :list
+                             (.getOption "modified"))]
+    (condp = id
+      (:list (:window @state)) (if modified
                                  (promesa/let [window (.openWindow (:nvim @state)
                                                                    (:list (:buffer @state))
                                                                    true
@@ -189,21 +189,17 @@
                                    (.setOption window "winfixbuf" true)
                                    (setval [ATOM :window :list] (.-id window) state)
                                    (show-error))
-                                 (close-other :filter)))
-    (:filter (:window @state)) (promesa/let [modified (-> @state
-                                                          :buffer
-                                                          :list
-                                                          (.getOption "modified"))]
-                                 (if modified
+                                 (close-other :filter))
+      (:filter (:window @state)) (if modified
                                    (promesa/let [window (-> @state
                                                             :buffer
                                                             :filter
                                                             (open-filter-window true))]
                                      (setval [ATOM :window :filter] (.-id window) state)
                                      (show-error))
-                                   (close-other :list)))
+                                   (close-other :list))
 
-    nil))
+      nil)))
 
 (def close
   (comp close*
