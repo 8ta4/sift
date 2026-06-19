@@ -301,8 +301,8 @@
                                              set
                                              (union (:current-overrides @state))
                                              (difference (:previous-overrides @state)))}
-                    (select-one (submap #{:regex
-                                          :toggles})
+                    (select-one (submap #{:toggles
+                                          :regex})
                                 @state)))
       (render-full))
     (request "nvim_input" "<Esc>")
