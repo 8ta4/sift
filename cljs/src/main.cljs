@@ -410,8 +410,15 @@
   (promesa/let [lines (-> @state
                           :buffer
                           :filter
-                          .getLines)]
-    (first (js->clj lines))))
+                          .getLines)
+                query (first (js->clj lines))]
+    (try (setval [ATOM :regex]
+                 (if (empty? query)
+                   NONE
+                   (js/RegExp. query "i"))
+                 state)
+         (catch :default _))
+    nil))
 
 (defn handle*
   [action]
