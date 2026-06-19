@@ -409,10 +409,10 @@
   (transform ATOM
              (comp (partial setval* [:undos BEFORE-ELEM] step)
                    (partial setval* [:redos FIRST] NONE)
-                   (partial assign :current-overrides :previous-overrides)
-                   (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
                    (partial setval* :regex (or (:regex step)
                                                NONE))
+                   (partial assign :current-overrides :previous-overrides)
+                   (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
                    (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:after step))))
              state))
