@@ -94,7 +94,7 @@
         (partial map render-item)
         (partial filter visible?)))
 
-(defn render-buffer
+(defn render-full
   []
   (promesa/let [buffer (:list (:buffer @state))]
     (.setOption buffer "modifiable" true)
@@ -150,7 +150,7 @@
                               :window {:filter (.-id filter-window)
                                        :list (.-id list-window)}})
                    state))
-      (render-buffer))))
+      (render-full))))
 
 (defn save
   []
@@ -303,7 +303,7 @@
                                       set
                                       (union (:current-overrides @state))
                                       (difference (:previous-overrides @state)))})
-      (render-buffer))
+      (render-full))
     (request "nvim_input" "<Esc>")
     (->> bounds
          last
@@ -332,9 +332,8 @@
                    (partial transform* :toggles (partial toggle-member action)))
              state))
 
-(defn toggle
-  [action]
-  (toggle* (lower-case-keyword action))
+(defn render-split
+  []
   (promesa/let [cursor (request "nvim_win_get_cursor" (:list (:window @state)))
                 lines (-> @state
                           :buffer
@@ -345,7 +344,7 @@
             js->clj
             first
             empty?)
-      (render-buffer)
+      (render-full)
       (promesa/let [buffer (:list (:buffer @state))
                     index ((:order @state) (->> lines
                                                 js->clj
@@ -365,6 +364,11 @@
                         format-items)
                    (clj->js {:start 0 :end index}))
         (.setOption buffer "modifiable" false)))))
+
+(defn toggle
+  [action]
+  (toggle* (lower-case-keyword action))
+  (render-split))
 
 (defn undo*
   [step]
@@ -389,7 +393,7 @@
           :undos
           first
           undo*)
-      (render-buffer)
+      (render-full)
       (->> cursor*
            (transform FIRST inc)
            clj->js
@@ -418,7 +422,7 @@
           :redos
           first
           redo*)
-      (render-buffer)
+      (render-full)
       (->> cursor*
            (transform FIRST inc)
            clj->js
@@ -437,7 +441,7 @@
                    (js/RegExp. query "i"))
                  state)
          (catch :default _))
-    (render-buffer)))
+    (render-split)))
 
 (defn handle*
   [action]
