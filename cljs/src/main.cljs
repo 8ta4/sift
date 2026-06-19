@@ -17,6 +17,7 @@
   (atom {:toggles #{}
          :current-overrides #{}
          :previous-overrides #{}
+         :query ""
          :undos []
          :redos []}))
 
@@ -302,7 +303,8 @@
                                              (union (:current-overrides @state))
                                              (difference (:previous-overrides @state)))}
                     (select-one (submap #{:toggles
-                                          :regex})
+                                          :regex
+                                          :query})
                                 @state)))
       (render-full))
     (request "nvim_input" "<Esc>")
@@ -380,9 +382,19 @@
                    (partial transform* :previous-overrides #(difference (union % (:removed-overrides step)) (:added-overrides step)))
                    (partial setval* :regex (or (:regex step)
                                                NONE))
-                   (partial setval* :toggles (:toggles step))
+                   #(merge % (select-one (submap #{:toggles
+                                                   :query})
+                                         step))
                    (partial transform* :items #(merge % (:before step))))
              state))
+
+(defn render-filter
+  []
+  (-> @state
+      :buffer
+      :filter
+      (.setLines (:query @state)
+                 (clj->js {:start 0 :end -1}))))
 
 (defn undo
   []
@@ -400,18 +412,21 @@
       (->> cursor*
            (transform FIRST inc)
            clj->js
-           (set! (.-cursor window))))))
+           (set! (.-cursor window)))
+      (render-filter))))
 
 (defn redo*
   [step]
   (transform ATOM
              (comp (partial setval* [:undos BEFORE-ELEM] step)
                    (partial setval* [:redos FIRST] NONE)
-                   (partial assign :current-overrides :previous-overrides)
-                   (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
                    (partial setval* :regex (or (:regex step)
                                                NONE))
-                   (partial setval* :toggles (:toggles step))
+                   (partial assign :current-overrides :previous-overrides)
+                   (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
+                   #(merge % (select-one (submap #{:toggles
+                                                   :query})
+                                         step))
                    (partial transform* :items #(merge % (:after step))))
              state))
 
@@ -431,7 +446,8 @@
       (->> cursor*
            (transform FIRST inc)
            clj->js
-           (set! (.-cursor window))))))
+           (set! (.-cursor window)))
+      (render-filter))))
 
 (defn change
   []
@@ -440,11 +456,12 @@
                           :filter
                           .getLines)
                 query (first (js->clj lines))]
-    (try (setval [ATOM :regex]
-                 (if (empty? query)
-                   NONE
-                   (js/RegExp. query "i"))
-                 state)
+    (try (transform ATOM
+                    (comp (partial setval* :query query)
+                          (partial setval* :regex (if (empty? query)
+                                                    NONE
+                                                    (js/RegExp. query "i"))))
+                    state)
          (catch :default _))
     (render-split)))
 
