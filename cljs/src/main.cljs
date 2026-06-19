@@ -5,7 +5,7 @@
             [clojure.math.combinatorics :refer [cartesian-product]]
             [clojure.set :refer [difference union]]
             [clojure.string :refer [lower-case split-lines trim]]
-            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE setval setval* transform transform*]]
+            [com.rpl.specter :refer [ATOM BEFORE-ELEM FIRST LAST MAP-VALS NONE select-one setval setval* submap transform transform*]]
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
@@ -280,29 +280,30 @@
                            (zipmap [:start :end])
                            clj->js
                            (.getLines buffer))
-                before (->> lines
-                            js->clj
-                            (map strip-prefix)
-                            (select-keys (:items @state))
+                before (->> @state
+                            :items
+                            (select-one (submap (map strip-prefix (js->clj lines))))
                             (remove (comp (partial = action)
                                           last))
                             (into {}))
                 length (.-length buffer)
                 window (.-window (:nvim @state))]
     (when-not (empty? before)
-      (mark* {:after (setval MAP-VALS action before)
-              :before before
-              :cursor (first bounds)
-              :toggles (:toggles @state)
-              :added-overrides (-> before
-                                   keys
-                                   set
-                                   (difference (:previous-overrides @state)))
-              :removed-overrides (->> before
-                                      keys
-                                      set
-                                      (union (:current-overrides @state))
-                                      (difference (:previous-overrides @state)))})
+      (mark* (merge {:after (setval MAP-VALS action before)
+                     :before before
+                     :cursor (first bounds)
+                     :added-overrides (-> before
+                                          keys
+                                          set
+                                          (difference (:previous-overrides @state)))
+                     :removed-overrides (->> before
+                                             keys
+                                             set
+                                             (union (:current-overrides @state))
+                                             (difference (:previous-overrides @state)))}
+                    (select-one (submap #{:toggles
+                                          :regex})
+                                @state)))
       (render-full))
     (request "nvim_input" "<Esc>")
     (->> bounds
@@ -377,6 +378,8 @@
                    (partial setval* [:undos FIRST] NONE)
                    (partial assign :current-overrides :previous-overrides)
                    (partial transform* :previous-overrides #(difference (union % (:removed-overrides step)) (:added-overrides step)))
+                   (partial setval* :regex (or (:regex step)
+                                               NONE))
                    (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:before step))))
              state))
@@ -406,6 +409,8 @@
                    (partial setval* [:redos FIRST] NONE)
                    (partial assign :current-overrides :previous-overrides)
                    (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
+                   (partial setval* :regex (or (:regex step)
+                                               NONE))
                    (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:after step))))
              state))
