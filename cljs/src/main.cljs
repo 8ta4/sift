@@ -378,6 +378,8 @@
                    (partial setval* [:undos FIRST] NONE)
                    (partial assign :current-overrides :previous-overrides)
                    (partial transform* :previous-overrides #(difference (union % (:removed-overrides step)) (:added-overrides step)))
+                   (partial setval* :regex (or (:regex step)
+                                               NONE))
                    (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:before step))))
              state))
