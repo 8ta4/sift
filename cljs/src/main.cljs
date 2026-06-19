@@ -180,6 +180,7 @@
                                                                    true
                                                                    (clj->js {:split "above"}))]
                                    (request "nvim_win_set_height" (:filter (:window @state)) 1)
+                                   (.setOption window "winfixbuf" true)
                                    (setval [ATOM :window :list] (.-id window) state))
                                  (close-other :filter)))
     (:filter (:window @state)) (promesa/let [modified (.getOption (:list (:buffer @state)) "modified")
@@ -191,6 +192,8 @@
                                                                      (clj->js {:height 1
                                                                                :split "below"
                                                                                :style "minimal"}))]
+                                     (.setOption window "winfixbuf" true)
+                                     (.setOption window "winfixheight" true)
                                      (setval [ATOM :window :filter] (.-id window) state))
                                    (close-other :list)))
 
