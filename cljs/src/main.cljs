@@ -101,17 +101,25 @@
                (clj->js {:start 0 :end -1}))
     (.setOption buffer "modifiable" false)))
 
+(defn open-filter-window
+  [buffer enter]
+  (promesa/let [window (.openWindow (:nvim @state)
+                                    buffer
+                                    enter
+                                    (clj->js {:height 1
+                                              :split "below"
+                                              :style "minimal"}))]
+    (.setOption window "winfixbuf" true)
+; If winfixheight is not set, opening and closing other windows may alter the filter-window height.
+    (.setOption window "winfixheight" true)
+    window))
+
 (defn load
   []
   (promesa/let [list-buffer (.-buffer (:nvim @state))
                 list-window (.-window (:nvim @state))
                 filter-buffer (.createBuffer (:nvim @state) false true)
-                filter-window (.openWindow (:nvim @state)
-                                           filter-buffer
-                                           false
-                                           (clj->js {:height 1
-                                                     :split "below"
-                                                     :style "minimal"}))
+                filter-window (open-filter-window filter-buffer false)
                 path (.-name list-buffer)]
     (when (existsSync path)
       (run! (fn [[mode action]]
@@ -127,9 +135,7 @@
                         :silent true}))
             (cartesian-product modes (map name actions)))
       (.setOption list-buffer "buftype" "acwrite")
-; If winfixheight is not set, opening and closing other windows may alter the filter-window height.
-      (.setOption filter-window "winfixheight" true)
-      (run! #(.setOption % "winfixbuf" true) #{list-window filter-window})
+      (.setOption list-window "winfixbuf" true)
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
                    #(merge % {:buffer {:filter filter-buffer
@@ -198,14 +204,10 @@
                                                         :filter
                                                         .-loaded)]
                                  (if (and modified loaded)
-                                   (promesa/let [window (.openWindow (:nvim @state)
-                                                                     (:filter (:buffer @state))
-                                                                     true
-                                                                     (clj->js {:height 1
-                                                                               :split "below"
-                                                                               :style "minimal"}))]
-                                     (.setOption window "winfixbuf" true)
-                                     (.setOption window "winfixheight" true)
+                                   (promesa/let [window (-> @state
+                                                            :buffer
+                                                            :filter
+                                                            (open-filter-window true))]
                                      (setval [ATOM :window :filter] (.-id window) state))
                                    (close-other :list)))
 
