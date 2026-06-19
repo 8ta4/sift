@@ -409,6 +409,8 @@
                    (partial setval* [:redos FIRST] NONE)
                    (partial assign :current-overrides :previous-overrides)
                    (partial transform* :previous-overrides #(difference (union % (:added-overrides step)) (:removed-overrides step)))
+                   (partial setval* :regex (or (:regex step)
+                                               NONE))
                    (partial setval* :toggles (:toggles step))
                    (partial transform* :items #(merge % (:after step))))
              state))
