@@ -138,8 +138,9 @@
             (cartesian-product modes (map name actions)))
       (.setOption list-buffer "buftype" "acwrite")
       (.setOption list-window "winfixbuf" true)
-      (request "nvim_create_autocmd" "TextChangedI" (clj->js {:buf (.-id filter-buffer)
-                                                              :command (str "Handle " (name :change))}))
+      (run! #(request "nvim_create_autocmd" % (clj->js {:buf (.-id filter-buffer)
+                                                        :command (str "Handle " (name :change))}))
+            #{"TextChanged" "TextChangedI"})
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
                    #(merge % {:buffer {:filter filter-buffer
