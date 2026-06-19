@@ -96,7 +96,7 @@
 
 (defn render-buffer
   []
-  (promesa/let [buffer (.-buffer (:nvim @state))]
+  (promesa/let [buffer (:list (:buffer @state))]
     (.setOption buffer "modifiable" true)
     (.setLines buffer
                (format-items (:items @state))
@@ -426,7 +426,7 @@
                    (js/RegExp. query "i"))
                  state)
          (catch :default _))
-    nil))
+    (render-buffer)))
 
 (defn handle*
   [action]
