@@ -170,8 +170,14 @@
 (defn close*
   [id]
   (condp = id
-    (:list (:window @state)) (promesa/let [modified (.getOption (:list (:buffer @state)) "modified")
-                                           loaded (.-loaded (:list (:buffer @state)))]
+    (:list (:window @state)) (promesa/let [modified (-> @state
+                                                        :buffer
+                                                        :list
+                                                        (.getOption "modified"))
+                                           loaded (-> @state
+                                                      :buffer
+                                                      :list
+                                                      .-loaded)]
 ; https://github.com/neovim/neovim/blob/a1da5d1f141f58158ffc33aa2c84e790633b57c9/runtime/doc/editing.txt#L1159-L1160
 ; When closed with `:q!`, the buffer is unloaded. When closed with `:q`, the buffer remains loaded.
                                (if (and modified loaded)
@@ -183,8 +189,14 @@
                                    (.setOption window "winfixbuf" true)
                                    (setval [ATOM :window :list] (.-id window) state))
                                  (close-other :filter)))
-    (:filter (:window @state)) (promesa/let [modified (.getOption (:list (:buffer @state)) "modified")
-                                             loaded (.-loaded (:filter (:buffer @state)))]
+    (:filter (:window @state)) (promesa/let [modified (-> @state
+                                                          :buffer
+                                                          :list
+                                                          (.getOption "modified"))
+                                             loaded (-> @state
+                                                        :buffer
+                                                        :filter
+                                                        .-loaded)]
                                  (if (and modified loaded)
                                    (promesa/let [window (.openWindow (:nvim @state)
                                                                      (:filter (:buffer @state))
