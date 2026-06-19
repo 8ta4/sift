@@ -180,8 +180,11 @@
                              :list
                              (.getOption "modified"))
                 command (call-function "histget" ":" -1)
-                block (and modified
-                           (not= \! (last (trim command))))]
+                block (->> command
+                           trim
+                           last
+                           (not= \!)
+                           (and modified))]
     (condp = id
       (:list (:window @state)) (if block
                                  (promesa/let [window (.openWindow (:nvim @state)
