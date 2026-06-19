@@ -335,11 +335,22 @@
 (defn toggle
   [action]
   (toggle* (lower-case-keyword action))
-  (promesa/let [line (.getLine (:nvim @state))]
-    (if (empty? line)
+  (promesa/let [cursor (request "nvim_win_get_cursor" (:list (:window @state)))
+                lines (-> @state
+                          :buffer
+                          :list
+                          (.getLines (clj->js {:start (dec (first cursor))
+                                               :end (first cursor)})))]
+    (if (-> lines
+            js->clj
+            first
+            empty?)
       (render-buffer)
-      (promesa/let [buffer (.-buffer (:nvim @state))
-                    index ((:order @state) (strip-prefix line))]
+      (promesa/let [buffer (:list (:buffer @state))
+                    index ((:order @state) (->> lines
+                                                js->clj
+                                                first
+                                                strip-prefix))]
         (.setOption buffer "modifiable" true)
         (.setLines buffer
                    (->> @state
