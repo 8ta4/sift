@@ -17,6 +17,7 @@
   (atom {:toggles #{}
          :current-overrides #{}
          :previous-overrides #{}
+         :query ""
          :undos []
          :redos []}))
 
@@ -302,7 +303,8 @@
                                              (union (:current-overrides @state))
                                              (difference (:previous-overrides @state)))}
                     (select-one (submap #{:toggles
-                                          :regex})
+                                          :regex
+                                          :query})
                                 @state)))
       (render-full))
     (request "nvim_input" "<Esc>")
@@ -440,11 +442,12 @@
                           :filter
                           .getLines)
                 query (first (js->clj lines))]
-    (try (setval [ATOM :regex]
-                 (if (empty? query)
-                   NONE
-                   (js/RegExp. query "i"))
-                 state)
+    (try (transform ATOM
+                    (comp (partial setval* :query query)
+                          (partial setval* :regex (if (empty? query)
+                                                    NONE
+                                                    (js/RegExp. query "i"))))
+                    state)
          (catch :default _))
     (render-split)))
 
