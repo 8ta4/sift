@@ -84,17 +84,19 @@
 
 (defn visible?
   [item]
-  (or (not ((:toggles @state) (val item)))
-      ((:current-overrides @state) (key item))))
+  (and (or (not ((:toggles @state) (val item)))
+           ((:current-overrides @state) (key item)))
+       (or (not (:regex @state))
+           (.test (:regex @state) (key item)))))
 
 (def format-items
   (comp clj->js
         (partial map render-item)
         (partial filter visible?)))
 
-(defn render-buffer
+(defn render-full
   []
-  (promesa/let [buffer (.-buffer (:nvim @state))]
+  (promesa/let [buffer (:list (:buffer @state))]
     (.setOption buffer "modifiable" true)
     (.setLines buffer
                (format-items (:items @state))
@@ -136,8 +138,9 @@
             (cartesian-product modes (map name actions)))
       (.setOption list-buffer "buftype" "acwrite")
       (.setOption list-window "winfixbuf" true)
-      (request "nvim_create_autocmd" "TextChangedI" (clj->js {:buf (.-id filter-buffer)
-                                                              :command (str "Handle " (name :change))}))
+      (run! #(request "nvim_create_autocmd" % (clj->js {:buf (.-id filter-buffer)
+                                                        :command (str "Handle " (name :change))}))
+            #{"TextChanged" "TextChangedI"})
       (let [items (read-string {:readers {'ordered/map ordered-map}} (slurp path))]
         (transform ATOM
                    #(merge % {:buffer {:filter filter-buffer
@@ -147,7 +150,7 @@
                               :window {:filter (.-id filter-window)
                                        :list (.-id list-window)}})
                    state))
-      (render-buffer))))
+      (render-full))))
 
 (defn save
   []
@@ -175,37 +178,41 @@
 
 (defn close*
   [id]
-  (promesa/let [modified (-> @state
-                             :buffer
-                             :list
-                             (.getOption "modified"))
-                command (call-function "histget" ":" -1)
-                block (->> command
-                           trim
-                           last
-                           (not= \!)
-                           (and modified))]
-    (condp = id
-      (:list (:window @state)) (if block
-                                 (promesa/let [window (.openWindow (:nvim @state)
-                                                                   (:list (:buffer @state))
-                                                                   true
-                                                                   (clj->js {:split "above"}))]
-                                   (request "nvim_win_set_height" (:filter (:window @state)) 1)
-                                   (.setOption window "winfixbuf" true)
-                                   (setval [ATOM :window :list] (.-id window) state)
-                                   (show-error))
-                                 (close-other :filter))
-      (:filter (:window @state)) (if block
-                                   (promesa/let [window (-> @state
-                                                            :buffer
-                                                            :filter
-                                                            (open-filter-window true))]
-                                     (setval [ATOM :window :filter] (.-id window) state)
-                                     (show-error))
-                                   (close-other :list))
-
-      nil)))
+  (when ((-> @state
+             :window
+             vals
+             set)
+         id)
+    (promesa/let [modified (-> @state
+                               :buffer
+                               :list
+                               (.getOption "modified"))
+                  command (call-function "histget" ":" -1)
+                  block (->> command
+                             trim
+                             last
+                             (not= \!)
+                             (and modified))]
+      (if block
+        (promesa/do
+          (if (->> @state
+                   :window
+                   :list
+                   (= id))
+            (promesa/let [window (.openWindow (:nvim @state)
+                                              (:list (:buffer @state))
+                                              true
+                                              (clj->js {:split "above"}))]
+              (request "nvim_win_set_height" (:filter (:window @state)) 1)
+              (.setOption window "winfixbuf" true)
+              (setval [ATOM :window :list] (.-id window) state))
+            (promesa/let [window (-> @state
+                                     :buffer
+                                     :filter
+                                     (open-filter-window true))]
+              (setval [ATOM :window :filter] (.-id window) state)))
+          (show-error))
+        (close-other :filter)))))
 
 (def close
   (comp close*
@@ -296,7 +303,7 @@
                                       set
                                       (union (:current-overrides @state))
                                       (difference (:previous-overrides @state)))})
-      (render-buffer))
+      (render-full))
     (request "nvim_input" "<Esc>")
     (->> bounds
          last
@@ -325,13 +332,24 @@
                    (partial transform* :toggles (partial toggle-member action)))
              state))
 
-(defn toggle
-  [action]
-  (toggle* (lower-case-keyword action))
-  (promesa/let [line (.getLine (:nvim @state))]
-    (when-not (empty? line)
-      (promesa/let [buffer (.-buffer (:nvim @state))
-                    index ((:order @state) (strip-prefix line))]
+(defn render-split
+  []
+  (promesa/let [cursor (request "nvim_win_get_cursor" (:list (:window @state)))
+                lines (-> @state
+                          :buffer
+                          :list
+                          (.getLines (clj->js {:start (dec (first cursor))
+                                               :end (first cursor)})))]
+    (if (-> lines
+            js->clj
+            first
+            empty?)
+      (render-full)
+      (promesa/let [buffer (:list (:buffer @state))
+                    index ((:order @state) (->> lines
+                                                js->clj
+                                                first
+                                                strip-prefix))]
         (.setOption buffer "modifiable" true)
         (.setLines buffer
                    (->> @state
@@ -346,6 +364,11 @@
                         format-items)
                    (clj->js {:start 0 :end index}))
         (.setOption buffer "modifiable" false)))))
+
+(defn toggle
+  [action]
+  (toggle* (lower-case-keyword action))
+  (render-split))
 
 (defn undo*
   [step]
@@ -370,7 +393,7 @@
           :undos
           first
           undo*)
-      (render-buffer)
+      (render-full)
       (->> cursor*
            (transform FIRST inc)
            clj->js
@@ -399,7 +422,7 @@
           :redos
           first
           redo*)
-      (render-buffer)
+      (render-full)
       (->> cursor*
            (transform FIRST inc)
            clj->js
@@ -410,8 +433,15 @@
   (promesa/let [lines (-> @state
                           :buffer
                           :filter
-                          .getLines)]
-    (first (js->clj lines))))
+                          .getLines)
+                query (first (js->clj lines))]
+    (try (setval [ATOM :regex]
+                 (if (empty? query)
+                   NONE
+                   (js/RegExp. query "i"))
+                 state)
+         (catch :default _))
+    (render-split)))
 
 (defn handle*
   [action]
