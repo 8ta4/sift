@@ -388,6 +388,14 @@
                    (partial transform* :items #(merge % (:before step))))
              state))
 
+(defn render-filter
+  []
+  (-> @state
+      :buffer
+      :filter
+      (.setLines (:query @state)
+                 (clj->js {:start 0 :end -1}))))
+
 (defn undo
   []
   (when-not (empty? (:undos @state))
@@ -404,7 +412,8 @@
       (->> cursor*
            (transform FIRST inc)
            clj->js
-           (set! (.-cursor window))))))
+           (set! (.-cursor window)))
+      (render-filter))))
 
 (defn redo*
   [step]
@@ -437,7 +446,8 @@
       (->> cursor*
            (transform FIRST inc)
            clj->js
-           (set! (.-cursor window))))))
+           (set! (.-cursor window)))
+      (render-filter))))
 
 (defn change
   []
