@@ -236,6 +236,14 @@ Yes.
 
 Undo rewinds the cursor. Neovim anchors visual selections to the cursor. If you jump the cursor across the file, the selection box might get stretched. Dropping the selection prevents this jarring behavior.
 
+> If I set a mark while the filter window has an invalid regex, will undoing the mark bring back the invalid string?
+
+No.
+
+If you undo the mark, the filter window will go back to the last valid regex or become empty.
+
+If the filter window restored your invalid string instead, you could get confused about why items get filtered the way they do.
+
 ### Saving
 
 > After I save and close a buffer, does `sift` retain my undo history?
