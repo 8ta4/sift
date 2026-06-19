@@ -162,22 +162,16 @@
 (defn close-other
   [k]
   (promesa/let [windows (.-windows (:nvim @state))]
-; Checking `(count (js->clj windows))` is nondeterministic.
-; The list window being closed may or may not still be present in Neovim's window list.
-    (if (->> @state
-             :window
-             vals
-             set
-             (subset? (->> windows
-                           js->clj
-                           (map #(.-id %))
-                           set)))
+    (if (->> windows
+             js->clj
+             count
+             (= 2))
       (.quit (:nvim @state))
       (request "nvim_win_close" (k (:window @state)) true))))
 
 (defn show-error
   []
-  (.errWriteLine (:nvim @state) "E37: No write since last change (add ! to override)"))
+  (.errWriteLine (:nvim @state) "E37: No write since last change"))
 
 (defn close*
   [id]
@@ -185,14 +179,8 @@
     (:list (:window @state)) (promesa/let [modified (-> @state
                                                         :buffer
                                                         :list
-                                                        (.getOption "modified"))
-                                           loaded (-> @state
-                                                      :buffer
-                                                      :list
-                                                      .-loaded)]
-; https://github.com/neovim/neovim/blob/a1da5d1f141f58158ffc33aa2c84e790633b57c9/runtime/doc/editing.txt#L1159-L1160
-; When closed with `:q!`, the buffer is unloaded. When closed with `:q`, the buffer remains loaded.
-                               (if (and modified loaded)
+                                                        (.getOption "modified"))]
+                               (if modified
                                  (promesa/let [window (.openWindow (:nvim @state)
                                                                    (:list (:buffer @state))
                                                                    true
@@ -205,12 +193,8 @@
     (:filter (:window @state)) (promesa/let [modified (-> @state
                                                           :buffer
                                                           :list
-                                                          (.getOption "modified"))
-                                             loaded (-> @state
-                                                        :buffer
-                                                        :filter
-                                                        .-loaded)]
-                                 (if (and modified loaded)
+                                                          (.getOption "modified"))]
+                                 (if modified
                                    (promesa/let [window (-> @state
                                                             :buffer
                                                             :filter
@@ -219,8 +203,7 @@
                                      (show-error))
                                    (close-other :list)))
 
-    nil)
-  nil)
+    nil))
 
 (def close
   (comp close*
