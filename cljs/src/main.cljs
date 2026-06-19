@@ -173,6 +173,10 @@
       (.quit (:nvim @state))
       (request "nvim_win_close" (k (:window @state)) true))))
 
+(defn show-error
+  []
+  (.errWriteLine (:nvim @state) "E37: No write since last change (add ! to override)"))
+
 (defn close*
   [id]
   (condp = id
@@ -193,7 +197,8 @@
                                                                    (clj->js {:split "above"}))]
                                    (request "nvim_win_set_height" (:filter (:window @state)) 1)
                                    (.setOption window "winfixbuf" true)
-                                   (setval [ATOM :window :list] (.-id window) state))
+                                   (setval [ATOM :window :list] (.-id window) state)
+                                   (show-error))
                                  (close-other :filter)))
     (:filter (:window @state)) (promesa/let [modified (-> @state
                                                           :buffer
@@ -208,7 +213,8 @@
                                                             :buffer
                                                             :filter
                                                             (open-filter-window true))]
-                                     (setval [ATOM :window :filter] (.-id window) state))
+                                     (setval [ATOM :window :filter] (.-id window) state)
+                                     (show-error))
                                    (close-other :list)))
 
     nil)
