@@ -475,12 +475,12 @@
          :window
          :filter
          (.setWindow (:nvim @state)))
-    (.command (:nvim @state) "startinsert")))
+    (.command (:nvim @state) "star!")))
 
 (defn cr
   []
   (promesa/do
-    (.command (:nvim @state) "stopinsert")
+    (.command (:nvim @state) "stopi")
     (->> @state
          :window
          :list
