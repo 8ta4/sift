@@ -54,6 +54,9 @@
   (.then (.request (:nvim @state) function (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
+(def modes
+  #{"n" "v"})
+
 (def mark-actions
   #{:a :c :d :x})
 
@@ -62,9 +65,6 @@
 
 (def actions
   (union #{:i :r :s :u} mark-actions toggle-actions))
-
-(def modes
-  #{"n" "v"})
 
 ; The commented-out version below causes `render-buffer` to take 100 ms or more on lists with 100,000 items.
 ; (def render-mark
