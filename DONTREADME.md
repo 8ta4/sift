@@ -302,6 +302,12 @@ In theory, an empty regex only matches an empty item, which doesn't exist when `
 
 You're in Insert mode.
 
+> If I press `i` to open the filter window, which column does the cursor land on?
+
+The cursor lands on the last column of the existing query.
+
+This lets you type to append characters. If you want to clear the query, you can hit `<C-u>` to delete the line.
+
 > If the filter doesn't hide the item under the cursor, will the cursor stay on that same item?
 
 Yes.
