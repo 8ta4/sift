@@ -61,7 +61,7 @@
   #{:A :C :D :X})
 
 (def actions
-  (union #{:i :r :s :u} mark-actions toggle-actions))
+  (union #{:i :c-r :s :u} mark-actions toggle-actions))
 
 ; The commented-out version below causes `render-buffer` to take 100 ms or more on lists with 100,000 items.
 ; (def render-mark
@@ -126,7 +126,7 @@
               (request "nvim_buf_set_keymap"
                        (.-id list-buffer)
                        (name mode)
-                       (get {"r" "<C-r>"} action action)
+                       (get {"c-r" "<C-r>"} action action)
                        (str "<Cmd>:Handle "
                             action
                             "<CR>")
@@ -490,7 +490,7 @@
                  :change change
                  :cr cr
                  :u undo
-                 :r redo))))
+                 :c-r redo))))
 
 (def handle
   (comp handle*
