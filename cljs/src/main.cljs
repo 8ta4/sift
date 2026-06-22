@@ -55,16 +55,13 @@
          #(js->clj % :keywordize-keys true)))
 
 (def mark-actions
-  #{:a :c :d :x})
+  #{:d :a :c :x})
 
 (def toggle-actions
-  #{:A :C :D :X})
+  #{:D :A :C :X})
 
 (def actions
-  (union #{:r :s :u} mark-actions toggle-actions))
-
-(def modes
-  #{"n" "v"})
+  (union #{:i :s :u :c-r} mark-actions toggle-actions))
 
 ; The commented-out version below causes `render-buffer` to take 100 ms or more on lists with 100,000 items.
 ; (def render-mark
@@ -129,14 +126,20 @@
               (request "nvim_buf_set_keymap"
                        (.-id list-buffer)
                        (name mode)
-                       (get {"r" "<C-r>"} action action)
-                       (str "<Cmd>:"
-                            "Handle "
+                       (get {"c-r" "<C-r>"} action action)
+                       (str "<Cmd>:Handle "
                             action
                             "<CR>")
                        {:nowait true
                         :silent true}))
-            (cartesian-product modes (map name actions)))
+            (cartesian-product #{"n" "v"} (map name actions)))
+      (run! #(request "nvim_buf_set_keymap"
+                      (.-id filter-buffer)
+                      (name %)
+                      "<CR>"
+                      "<Cmd>:Handle cr<CR>"
+                      {:silent true})
+            #{"i" "n" "v"})
       (.setOption list-buffer "buftype" "acwrite")
       (.setOption list-window "winfixbuf" true)
       (run! #(request "nvim_create_autocmd" % (clj->js {:buf (.-id filter-buffer)
@@ -219,38 +222,9 @@
   (comp close*
         parse-long))
 
-(defn get-references
-  []
-  (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
-    (js->clj references :keywordize-keys true)))
-
-(def socket-path
-  (join (tmpdir) "sift.sock"))
-
-(defn encode
-  [message]
-  (let [payload (-> message
-                    clj->js
-                    js/JSON.stringify
-                    js/Buffer.from)
-        header (js/Buffer.alloc 4)]
-    (.writeUInt32LE header (.-length payload))
-    (js/Buffer.concat (clj->js [header payload]))))
-
 (defn strip-prefix
   [line]
   (subs line 4))
-
-(defn see
-  []
-  (promesa/let [line (.getLine (:nvim @state))]
-    (when-not (empty? line)
-      (promesa/let [references (get-references)
-                    socket (createConnection socket-path)]
-        (.on socket "connect" (fn []
-                                (.write socket (encode {:references references
-                                                        :text (strip-prefix line)}))
-                                (.end socket)))))))
 
 (defn assign
   [apath k structure]
@@ -373,6 +347,51 @@
   (toggle* (lower-case-keyword action))
   (render-split))
 
+(defn get-references
+  []
+  (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
+    (js->clj references :keywordize-keys true)))
+
+(def socket-path
+  (join (tmpdir) "sift.sock"))
+
+(defn encode
+  [message]
+  (let [payload (-> message
+                    clj->js
+                    js/JSON.stringify
+                    js/Buffer.from)
+        header (js/Buffer.alloc 4)]
+    (.writeUInt32LE header (.-length payload))
+    (js/Buffer.concat (clj->js [header payload]))))
+
+(defn see
+  []
+  (promesa/let [line (.getLine (:nvim @state))]
+    (when-not (empty? line)
+      (promesa/let [references (get-references)
+                    socket (createConnection socket-path)]
+        (.on socket "connect" (fn []
+                                (.write socket (encode {:references references
+                                                        :text (strip-prefix line)}))
+                                (.end socket)))))))
+
+(defn change
+  []
+  (promesa/let [lines (-> @state
+                          :buffer
+                          :filter
+                          .getLines)
+                query (first (js->clj lines))]
+    (try (transform ATOM
+                    (comp (partial setval* :query query)
+                          (partial setval* :regex (if (empty? query)
+                                                    NONE
+                                                    (js/RegExp. query "i"))))
+                    state)
+         (catch :default _))
+    (render-split)))
+
 (defn undo*
   [step]
   (transform ATOM
@@ -449,31 +468,35 @@
            (set! (.-cursor window)))
       (render-filter))))
 
-(defn change
+(defn input
   []
-  (promesa/let [lines (-> @state
-                          :buffer
-                          :filter
-                          .getLines)
-                query (first (js->clj lines))]
-    (try (transform ATOM
-                    (comp (partial setval* :query query)
-                          (partial setval* :regex (if (empty? query)
-                                                    NONE
-                                                    (js/RegExp. query "i"))))
-                    state)
-         (catch :default _))
-    (render-split)))
+  (promesa/do
+    (->> @state
+         :window
+         :filter
+         (.setWindow (:nvim @state)))
+    (.command (:nvim @state) "startinsert")))
+
+(defn cr
+  []
+  (promesa/do
+    (.command (:nvim @state) "stopinsert")
+    (->> @state
+         :window
+         :list
+         (.setWindow (:nvim @state)))))
 
 (defn handle*
   [action]
   (cond (action mark-actions) (mark action)
         (action toggle-actions) (toggle action)
         :else ((case action
-                 :change change
                  :s see
+                 :i input
+                 :change change
+                 :cr cr
                  :u undo
-                 :r redo))))
+                 :c-r redo))))
 
 (def handle
   (comp handle*
@@ -496,10 +519,7 @@
 (defn write-manifest
   [directory manifest]
   (make-parents (join directory host-filename))
-  (->> {:description "Native messaging host for the sift Neovim plugin"
-        :name host-filename
-        :path host-path
-        :type "stdio"}
+  (->> {}
        (merge manifest)
        clj->js
        js/JSON.stringify
