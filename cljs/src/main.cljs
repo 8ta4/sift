@@ -55,13 +55,13 @@
          #(js->clj % :keywordize-keys true)))
 
 (def mark-actions
-  #{:a :c :d :x})
+  #{:d :a :c :x})
 
 (def toggle-actions
-  #{:A :C :D :X})
+  #{:D :A :C :X})
 
 (def actions
-  (union #{:i :c-r :s :u} mark-actions toggle-actions))
+  (union #{:i :s :u :c-r} mark-actions toggle-actions))
 
 ; The commented-out version below causes `render-buffer` to take 100 ms or more on lists with 100,000 items.
 ; (def render-mark
