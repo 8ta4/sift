@@ -171,14 +171,6 @@ Think "input".
 
 This plays into your muscle memory for typing after you press `i` to enter Insert mode.
 
-> If I hit `i` to bring up the filter window, which mode am I in?
-
-You're in Insert mode.
-
-> How do I switch from Insert to Normal mode in the filter window?
-
-Tap `<Esc>`.
-
 > Will hitting `<Enter>` in the filter window add a new line?
 
 No.
@@ -186,11 +178,3 @@ No.
 If you hit `<Enter>`, the filter window switches to Normal mode and the list window gets focus. `<Enter>` is a quick way to say you're done typing.
 
 That stops you from accidentally making a multi‑line regex.
-
-> If the filter window is empty, does `sift` apply an empty regex?
-
-No.
-
-An empty string is treated as having no regex filter.
-
-In theory, an empty regex only matches an empty item, which doesn't exist when `sift` builds the list.

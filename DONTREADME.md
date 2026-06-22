@@ -290,6 +290,18 @@ Neovim acts like this with other file types.
 
 The filter window is a split one. A split window lets you quickly hop between the filter window and the list window using Neovim's usual navigation commands.
 
+> If the filter window is empty, does `sift` apply an empty regex?
+
+No.
+
+An empty string is treated as having no regex filter.
+
+In theory, an empty regex only matches an empty item, which doesn't exist when `sift` builds the list.
+
+> If I hit `i` to bring up the filter window, which mode am I in?
+
+You're in Insert mode.
+
 > If the filter doesn't hide the item under the cursor, will the cursor stay on that same item?
 
 Yes.
@@ -325,6 +337,10 @@ Excel works like that.
 > If a filter hides the item under the cursor, can the cursor remain on the same column?
 
 Yes. If the item the cursor will land on has enough columns, the cursor will stay on the same column. Otherwise, the cursor snaps to the last column.
+
+> How do I switch from Insert to Normal mode in the filter window?
+
+Tap `<Esc>`.
 
 > If I close the list window, does the filter window close too?
 
