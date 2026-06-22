@@ -467,10 +467,12 @@
 
 (defn input
   []
-  (->> @state
-       :window
-       :filter
-       (.setWindow (:nvim @state))))
+  (promesa/do
+    (->> @state
+         :window
+         :filter
+         (.setWindow (:nvim @state)))
+    (.command (:nvim @state) "startinsert")))
 
 (defn handle*
   [action]
@@ -504,10 +506,7 @@
 (defn write-manifest
   [directory manifest]
   (make-parents (join directory host-filename))
-  (->> {:description "Native messaging host for the sift Neovim plugin"
-        :name host-filename
-        :path host-path
-        :type "stdio"}
+  (->> {}
        (merge manifest)
        clj->js
        js/JSON.stringify
