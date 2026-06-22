@@ -478,7 +478,13 @@
     (.command (:nvim @state) "startinsert")))
 
 (defn cr
-  [])
+  []
+  (promesa/do
+    (.command (:nvim @state) "stopinsert")
+    (->> @state
+         :window
+         :list
+         (.setWindow (:nvim @state)))))
 
 (defn handle*
   [action]
