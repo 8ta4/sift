@@ -54,9 +54,6 @@
   (.then (.request (:nvim @state) function (clj->js args))
          #(js->clj % :keywordize-keys true)))
 
-(def modes
-  #{"n" "v"})
-
 (def mark-actions
   #{:a :c :d :x})
 
@@ -135,7 +132,14 @@
                             "<CR>")
                        {:nowait true
                         :silent true}))
-            (cartesian-product modes (map name actions)))
+            (cartesian-product #{"n" "v"} (map name actions)))
+      (run! #(request "nvim_buf_set_keymap"
+                      (.-id filter-buffer)
+                      (name %)
+                      "<CR>"
+                      "<Cmd>:Handle cr<CR>"
+                      {:silent true})
+            #{"i" "n" "v"})
       (.setOption list-buffer "buftype" "acwrite")
       (.setOption list-window "winfixbuf" true)
       (run! #(request "nvim_create_autocmd" % (clj->js {:buf (.-id filter-buffer)
@@ -473,6 +477,9 @@
          (.setWindow (:nvim @state)))
     (.command (:nvim @state) "startinsert")))
 
+(defn cr
+  [])
+
 (defn handle*
   [action]
   (cond (action mark-actions) (mark action)
@@ -481,6 +488,7 @@
                  :s see
                  :i input
                  :change change
+                 :cr cr
                  :u undo
                  :r redo))))
 
