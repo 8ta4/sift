@@ -219,38 +219,9 @@
   (comp close*
         parse-long))
 
-(defn get-references
-  []
-  (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
-    (js->clj references :keywordize-keys true)))
-
-(def socket-path
-  (join (tmpdir) "sift.sock"))
-
-(defn encode
-  [message]
-  (let [payload (-> message
-                    clj->js
-                    js/JSON.stringify
-                    js/Buffer.from)
-        header (js/Buffer.alloc 4)]
-    (.writeUInt32LE header (.-length payload))
-    (js/Buffer.concat (clj->js [header payload]))))
-
 (defn strip-prefix
   [line]
   (subs line 4))
-
-(defn see
-  []
-  (promesa/let [line (.getLine (:nvim @state))]
-    (when-not (empty? line)
-      (promesa/let [references (get-references)
-                    socket (createConnection socket-path)]
-        (.on socket "connect" (fn []
-                                (.write socket (encode {:references references
-                                                        :text (strip-prefix line)}))
-                                (.end socket)))))))
 
 (defn assign
   [apath k structure]
@@ -373,6 +344,51 @@
   (toggle* (lower-case-keyword action))
   (render-split))
 
+(defn get-references
+  []
+  (promesa/let [references (.lua (:nvim @state) "return require('sift').config.references")]
+    (js->clj references :keywordize-keys true)))
+
+(def socket-path
+  (join (tmpdir) "sift.sock"))
+
+(defn encode
+  [message]
+  (let [payload (-> message
+                    clj->js
+                    js/JSON.stringify
+                    js/Buffer.from)
+        header (js/Buffer.alloc 4)]
+    (.writeUInt32LE header (.-length payload))
+    (js/Buffer.concat (clj->js [header payload]))))
+
+(defn see
+  []
+  (promesa/let [line (.getLine (:nvim @state))]
+    (when-not (empty? line)
+      (promesa/let [references (get-references)
+                    socket (createConnection socket-path)]
+        (.on socket "connect" (fn []
+                                (.write socket (encode {:references references
+                                                        :text (strip-prefix line)}))
+                                (.end socket)))))))
+
+(defn change
+  []
+  (promesa/let [lines (-> @state
+                          :buffer
+                          :filter
+                          .getLines)
+                query (first (js->clj lines))]
+    (try (transform ATOM
+                    (comp (partial setval* :query query)
+                          (partial setval* :regex (if (empty? query)
+                                                    NONE
+                                                    (js/RegExp. query "i"))))
+                    state)
+         (catch :default _))
+    (render-split)))
+
 (defn undo*
   [step]
   (transform ATOM
@@ -449,29 +465,13 @@
            (set! (.-cursor window)))
       (render-filter))))
 
-(defn change
-  []
-  (promesa/let [lines (-> @state
-                          :buffer
-                          :filter
-                          .getLines)
-                query (first (js->clj lines))]
-    (try (transform ATOM
-                    (comp (partial setval* :query query)
-                          (partial setval* :regex (if (empty? query)
-                                                    NONE
-                                                    (js/RegExp. query "i"))))
-                    state)
-         (catch :default _))
-    (render-split)))
-
 (defn handle*
   [action]
   (cond (action mark-actions) (mark action)
         (action toggle-actions) (toggle action)
         :else ((case action
-                 :change change
                  :s see
+                 :change change
                  :u undo
                  :r redo))))
 
