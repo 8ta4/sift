@@ -465,12 +465,20 @@
            (set! (.-cursor window)))
       (render-filter))))
 
+(defn input
+  []
+  (->> @state
+       :window
+       :filter
+       (.setWindow (:nvim @state))))
+
 (defn handle*
   [action]
   (cond (action mark-actions) (mark action)
         (action toggle-actions) (toggle action)
         :else ((case action
                  :s see
+                 :i input
                  :change change
                  :u undo
                  :r redo))))
