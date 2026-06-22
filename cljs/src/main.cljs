@@ -130,8 +130,7 @@
                        (.-id list-buffer)
                        (name mode)
                        (get {"r" "<C-r>"} action action)
-                       (str "<Cmd>:"
-                            "Handle "
+                       (str "<Cmd>:Handle "
                             action
                             "<CR>")
                        {:nowait true
