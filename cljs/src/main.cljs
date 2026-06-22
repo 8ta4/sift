@@ -61,7 +61,7 @@
   #{:A :C :D :X})
 
 (def actions
-  (union #{:r :s :u} mark-actions toggle-actions))
+  (union #{:i :r :s :u} mark-actions toggle-actions))
 
 (def modes
   #{"n" "v"})
