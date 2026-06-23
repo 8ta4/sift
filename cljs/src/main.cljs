@@ -539,5 +539,5 @@
                                         :sync true})
   (register-command plugin "Handle" handle {:nargs 1
                                             :sync true})
-  (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://aobaoadfgfpeggekafmdlmgdondfnpdo"]})
+  (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://cnicmidgcjdhmjjgjhannfikdeplcfme"]})
   (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))

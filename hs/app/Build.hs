@@ -50,6 +50,5 @@ chrome =
           [ "service_worker" .= ("js/background.js" :: Text),
             "type" .= ("module" :: Text)
           ],
-      -- This public key ensures Chrome generates a consistent extension ID during development.
-      "key" .= ("0000" :: Text)
+      "key" .= ("MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsLBbTxtoxub0JD2snkyNBk87JLch7w8GGK5Wupi/P1Q3IS8qvMToUPFcRRLEUW6x+YrgcAtaAjuYjzr8Cye8yTEeLrwvtEqZ1+lH6XpmyZthB/4kBvvMC/rDEgJ4zu2MqjPNEGtcJnPwK5pkZGEzYXZgmAB0YFqGE3LWiGdtC+wShCp8hO4SPOyqytrwz95lM969cEhIV90x9CJHtINSFY2MBIs1GT1gvnnyYUZzhQTgretJZiNq4PdwUKY9pdzU1i2/DKWuhwnZx+D4iMNgNjx/gXU1rYrQ/H5afYA23vq7y6LwShOXRag0UGPqUZDg2ZHkdUQk2uwPXCCeN4QHSwIDAQAB" :: Text)
     ]
