@@ -5,23 +5,21 @@ import Data.ByteString.Lazy (hPut)
 import Network.Socket (Family (AF_UNIX), SockAddr (SockAddrUnix), Socket, SocketType (Stream), accept, bind, close, defaultProtocol, listen, socket)
 import Network.Socket.ByteString.Lazy (getContents)
 import Relude
-import System.Directory (getTemporaryDirectory, removeFile)
-import System.FilePath ((</>))
+import System.Directory (removeFile)
 import System.IO.Error (isDoesNotExistError)
 
 main :: IO ()
 main = do
-  socketPath <- getSocketPath
   removeIfExists socketPath
   unixSocket <- socket AF_UNIX Stream defaultProtocol
   bind unixSocket $ SockAddrUnix socketPath
   listen unixSocket 1
   forever $ bracket (fst <$> accept unixSocket) close serveClient
 
-getSocketPath :: IO FilePath
-getSocketPath = do
-  temporaryDirectory <- getTemporaryDirectory
-  pure $ temporaryDirectory </> "sift.sock"
+socketPath :: FilePath
+-- We use a hardcoded "/tmp/sift.sock" path instead of 'getTemporaryDirectory'.
+-- When Google Chrome starts the native messaging host, the directory returned by 'getTemporaryDirectory' is not "/tmp/", which causes a mismatch with the socket path expected by the Neovim plugin.
+socketPath = "/tmp/sift.sock"
 
 -- https://stackoverflow.com/a/8502391
 removeIfExists :: FilePath -> IO ()
