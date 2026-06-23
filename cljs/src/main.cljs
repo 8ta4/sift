@@ -374,7 +374,8 @@
         (.on socket "connect" (fn []
                                 (.write socket (encode {:references references
                                                         :text (strip-prefix line)}))
-                                (.end socket)))))))
+                                (.end socket)))
+        nil))))
 
 (defn change
   []
