@@ -47,7 +47,15 @@
     echo hello from $GREET
   '';
   scripts.release.exec = ''
-    cd "$DEVENV_ROOT/cljs" && rm -rf release/js && shadow-cljs release background --config-merge '{:output-dir "release/js"}' && rm -rf ../rplugin && shadow-cljs release main
+    cd "$DEVENV_ROOT/cljs" &&
+    rm -rf release/js &&
+    shadow-cljs release background --config-merge '{:output-dir "release/js"}' &&
+    rm -rf ../rplugin &&
+    shadow-cljs release main &&
+    cd "$DEVENV_ROOT/cljs/release" &&
+    zip -r "$DEVENV_ROOT/extension.zip" . &&
+    cd "$DEVENV_ROOT" &&
+    tar czf plugin.tar.gz node_modules rplugin/node
   '';
   scripts.run.exec = ''
     cd "$DEVENV_ROOT" && nvim sift/small.sift
