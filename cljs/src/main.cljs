@@ -374,7 +374,8 @@
         (.on socket "connect" (fn []
                                 (.write socket (encode {:references references
                                                         :text (strip-prefix line)}))
-                                (.end socket)))))))
+                                (.end socket)))
+        nil))))
 
 (defn change
   []
@@ -519,7 +520,10 @@
 (defn write-manifest
   [directory manifest]
   (make-parents (join directory host-filename))
-  (->> {}
+  (->> {:description "Native messaging host for the sift Neovim plugin"
+        :name host-filename
+        :path host-path
+        :type "stdio"}
        (merge manifest)
        clj->js
        js/JSON.stringify
@@ -539,5 +543,6 @@
                                         :sync true})
   (register-command plugin "Handle" handle {:nargs 1
                                             :sync true})
-  (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://cnicmidgcjdhmjjgjhannfikdeplcfme"]})
+; https://stackoverflow.com/a/62618278
+  (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://cnicmidgcjdhmjjgjhannfikdeplcfme/"]})
   (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))
