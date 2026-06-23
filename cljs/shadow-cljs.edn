@@ -6,6 +6,7 @@
  [[babashka/fs "0.5.33"]
   [com.github.pkpkpk/cljs-node-io "2.0.339"]
   [com.rpl/specter "1.1.6"]
+  [funcool/cuerdas "2026.415"]
   [funcool/promesa "11.0.678"]
   [org.clojure/math.combinatorics "0.3.2"]
   [org.flatland/ordered "1.15.12"]]

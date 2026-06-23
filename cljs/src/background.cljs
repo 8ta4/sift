@@ -1,6 +1,6 @@
 (ns background
   (:require [com.rpl.specter :refer [ATOM MAP-VALS NONE setval]]
-            [goog.string :refer [format]]
+            [cuerdas.core :refer [format]]
             [promesa.core :as promesa]))
 
 (defonce port
