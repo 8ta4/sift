@@ -25,12 +25,14 @@ jobs:
       - name: Run a single command in the devenv shell
         run: devenv shell hello
       - run: devenv shell release
-      # https://github.com/softprops/action-gh-release/blob/718ea10b132b3b2eba29c1007bb80653f286566b/README.md?plain=1#L110-L114
+      # https://github.com/softprops/action-gh-release/blob/718ea10b132b3b2eba29c1007bb80653f286566b/README.md?plain=1#L134-L140
       - name: Release
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         if: github.ref_type == 'tag'
         with:
-          files: plugin.tar.gz
+          files: |
+            extension.zip
+            plugin.tar.gz
 # https://github.com/softprops/action-gh-release/blob/718ea10b132b3b2eba29c1007bb80653f286566b/README.md?plain=1#L289-L290
 permissions:
   contents: write
