@@ -543,5 +543,6 @@
                                         :sync true})
   (register-command plugin "Handle" handle {:nargs 1
                                             :sync true})
+; https://stackoverflow.com/a/62618278
   (write-manifest chrome-hosts-directory {:allowed_origins ["chrome-extension://cnicmidgcjdhmjjgjhannfikdeplcfme/"]})
   (write-manifest firefox-hosts-directory {:allowed_extensions ["@sift"]}))
