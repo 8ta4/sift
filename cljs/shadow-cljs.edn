@@ -17,8 +17,9 @@
          :js-options {:js-package-dirs ["../node_modules"]}
          :output-to "../rplugin/node/main.js"
          :target :node-library}
+  :background {:compiler-options {:optimizations :simple}
 ; https://github.com/thheller/shadow-cljs/issues/902#:~:text=This%20fixed%20the,host%20false%7D
-  :background {:devtools {:use-document-host false}
+               :devtools {:use-document-host false}
                :modules {:background {:init-fn background/init}}
                :output-dir "public/js"
                :target :esm}}}
