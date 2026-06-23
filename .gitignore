@@ -168,5 +168,7 @@ vite.config.ts.timestamp-*
 .pre-commit-config.yaml
 
 # sift
+extension.zip
 node.log
+plugin.tar.gz
 rplugin
