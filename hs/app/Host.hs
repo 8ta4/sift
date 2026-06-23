@@ -17,6 +17,8 @@ main = do
   forever $ bracket (fst <$> accept unixSocket) close serveClient
 
 socketPath :: FilePath
+-- We use a hardcoded "/tmp/sift.sock" path instead of 'getTemporaryDirectory'.
+-- When Google Chrome starts the native messaging host, the directory returned by 'getTemporaryDirectory' is not "/tmp/", which causes a mismatch with the socket path expected by the Neovim plugin.
 socketPath = "/tmp/sift.sock"
 
 -- https://stackoverflow.com/a/8502391
