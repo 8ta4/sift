@@ -520,7 +520,10 @@
 (defn write-manifest
   [directory manifest]
   (make-parents (join directory host-filename))
-  (->> {}
+  (->> {:description "Native messaging host for the sift Neovim plugin"
+        :name host-filename
+        :path host-path
+        :type "stdio"}
        (merge manifest)
        clj->js
        js/JSON.stringify
