@@ -55,7 +55,7 @@
     cd "$DEVENV_ROOT/cljs/release" &&
     zip -r "$DEVENV_ROOT/extension.zip" . &&
     cd "$DEVENV_ROOT" &&
-    tar czf plugin.tar.gz node_modules rplugin/node
+    tar czf plugin.tar.gz hs/bin/host node_modules rplugin/node
   '';
   scripts.run.exec = ''
     cd "$DEVENV_ROOT" && nvim sift/small.sift
