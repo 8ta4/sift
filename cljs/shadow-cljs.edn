@@ -12,6 +12,7 @@
 
  :builds
  {:main {:build-hooks [(build/build)]
+         :compiler-options {:optimizations :simple}
          :exports {:default main/main}
          :js-options {:js-package-dirs ["../node_modules"]}
          :output-to "../rplugin/node/main.js"
