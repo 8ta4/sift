@@ -12,6 +12,7 @@
     pkgs.ghcid
     pkgs.git
     pkgs.gitleaks
+    pkgs.imagemagick
     pkgs.nil
     pkgs.pre-commit
     pkgs.rubyPackages.solargraph
@@ -46,6 +47,9 @@
   scripts.hello.exec = ''
     echo hello from $GREET
   '';
+  scripts.log.exec = ''
+    cd "$DEVENV_ROOT" && nvim +star "+te tail -F node.log -n +1"
+  '';
   scripts.release.exec = ''
     cd "$DEVENV_ROOT/cljs" &&
     rm -rf release/js &&
@@ -53,15 +57,13 @@
     rm -rf ../rplugin &&
     shadow-cljs release main &&
     cd "$DEVENV_ROOT/cljs/release" &&
+    magick -background black -fill white -font /System/Library/Fonts/Helvetica.ttc -pointsize 128 label:S -trim -gravity center -extent 128x128 icon.png &&
     zip -r "$DEVENV_ROOT/extension.zip" . &&
     cd "$DEVENV_ROOT" &&
     tar czf plugin.tar.gz hs/bin/host node_modules rplugin/node
   '';
   scripts.run.exec = ''
     cd "$DEVENV_ROOT" && nvim sift/small.sift
-  '';
-  scripts.log.exec = ''
-    cd "$DEVENV_ROOT" && nvim +star "+te tail -F node.log -n +1"
   '';
   # ':set -Wprepositive-qualified-module' command works around a ghcid crash related to the `-Wprepositive-qualified-module` warning.
   # The warning can be triggered by GHCi's internal startup process, causing a crash if enabled from the start.
