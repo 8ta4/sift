@@ -12,6 +12,7 @@
     pkgs.ghcid
     pkgs.git
     pkgs.gitleaks
+    pkgs.imagemagick
     pkgs.nil
     pkgs.pre-commit
     pkgs.rubyPackages.solargraph
@@ -56,6 +57,7 @@
     rm -rf ../rplugin &&
     shadow-cljs release main &&
     cd "$DEVENV_ROOT/cljs/release" &&
+    magick -background black -fill white -font /System/Library/Fonts/Helvetica.ttc -pointsize 128 label:S -trim -gravity center -extent 128x128 icon.png &&
     zip -r "$DEVENV_ROOT/extension.zip" . &&
     cd "$DEVENV_ROOT" &&
     tar czf plugin.tar.gz hs/bin/host node_modules rplugin/node
