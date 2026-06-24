@@ -46,6 +46,9 @@
   scripts.hello.exec = ''
     echo hello from $GREET
   '';
+  scripts.log.exec = ''
+    cd "$DEVENV_ROOT" && nvim +star "+te tail -F node.log -n +1"
+  '';
   scripts.release.exec = ''
     cd "$DEVENV_ROOT/cljs" &&
     rm -rf release/js &&
@@ -59,9 +62,6 @@
   '';
   scripts.run.exec = ''
     cd "$DEVENV_ROOT" && nvim sift/small.sift
-  '';
-  scripts.log.exec = ''
-    cd "$DEVENV_ROOT" && nvim +star "+te tail -F node.log -n +1"
   '';
   # ':set -Wprepositive-qualified-module' command works around a ghcid crash related to the `-Wprepositive-qualified-module` warning.
   # The warning can be triggered by GHCi's internal startup process, causing a crash if enabled from the start.
