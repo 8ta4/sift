@@ -41,4 +41,5 @@ pom.xml.asc
 
 # sift
 public
-release
+release/*
+!release/screenshot.png
