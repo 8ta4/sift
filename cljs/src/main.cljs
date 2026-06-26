@@ -9,7 +9,7 @@
             [flatland.ordered.map :refer [ordered-map]]
             [fs :refer [existsSync]]
             [net :refer [createConnection]]
-            [os :refer [homedir tmpdir]]
+            [os :refer [homedir]]
             [path :refer [join]]
             [promesa.core :as promesa :refer [all]]))
 
@@ -353,7 +353,7 @@
     (js->clj references :keywordize-keys true)))
 
 (def socket-path
-  (join (tmpdir) "sift.sock"))
+  "/tmp/sift.sock")
 
 (defn encode
   [message]
