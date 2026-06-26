@@ -36,7 +36,7 @@
    nvim --headless "+Lazy load sift" +UpdateRemotePlugins +qa!
    ```
 
-1. Install the Chrome extension.
+1. Install [the Chrome extension](https://chromewebstore.google.com/detail/sift/cnicmidgcjdhmjjgjhannfikdeplcfme).
 
 ## Usage
 
