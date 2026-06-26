@@ -132,6 +132,7 @@
     nixfmt.enable = true;
     ormolu.enable = true;
     prettier.enable = true;
+    shellcheck.enable = true;
     stylua.enable = true;
     trim-trailing-whitespace.enable = true;
   };
