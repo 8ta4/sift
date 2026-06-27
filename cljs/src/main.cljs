@@ -312,10 +312,11 @@
 (defn render-split
   []
   (promesa/let [cursor (request "nvim_win_get_cursor" (:list (:window @state)))
+                row (dec (first cursor))
                 lines (-> @state
                           :buffer
                           :list
-                          (.getLines (clj->js {:start (dec (first cursor))
+                          (.getLines (clj->js {:start row
                                                :end (first cursor)})))]
     (if (-> lines
             js->clj
@@ -333,13 +334,13 @@
                         :items
                         (drop index)
                         format-items)
-                   (clj->js {:start index :end -1}))
+                   (clj->js {:start row :end -1}))
         (.setLines buffer
                    (->> @state
                         :items
                         (take index)
                         format-items)
-                   (clj->js {:start 0 :end index}))
+                   (clj->js {:start 0 :end row}))
         (.setOption buffer "modifiable" false)))))
 
 (defn toggle
