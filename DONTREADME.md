@@ -244,7 +244,7 @@ If you undo the mark, the filter window will go back to the last valid regex or 
 
 If the filter window restored your invalid string instead, you could get confused about why items get filtered the way they do.
 
-### Saving
+### Saving (Planned)
 
 > After I save and close a buffer, does `sift` retain my undo history?
 
@@ -365,12 +365,6 @@ Sure, the filter window staying open takes up a few lines. But you can only glan
 If the filter window were closed, the active regex could be displayed somewhere else to remind you why items are hidden. But this would add extra UI clutter and make your eyes jump around depending on whether you're viewing or editing the `regex`.
 
 Additionally, leaving the window open lets you leverage your existing Neovim window navigation keybindings to jump down to the filter window.
-
-> Does opening the filter window clear the regex filter I'm using?
-
-No.
-
-The filter window comes preloaded with the active regex.
 
 > If the string in the filter window isn't a valid regex, can `sift` still apply a regex filter?
 
