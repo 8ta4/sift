@@ -24,6 +24,7 @@ base =
     [ "manifest_version" .= (3 :: Int),
       "name" .= ("sift" :: Text),
       "permissions"
+        -- https://groups.google.com/a/chromium.org/g/chromium-extensions/c/1ccmfmH8F0o/m/jS-B7wh5BwAJ
         .= [ "background" :: Text,
              "nativeMessaging"
            ]
