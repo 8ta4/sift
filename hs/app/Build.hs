@@ -14,7 +14,7 @@ main = do
 writeManifest :: FilePath -> Object -> IO ()
 writeManifest path config = do
   createDirectoryIfMissing True $ takeDirectory path
-  writeFileLBS path $ encode $ Object $ config <> base
+  writeFileLBS path $ encode $ Object $ base <> config
 
 base :: Object
 base =
