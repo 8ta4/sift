@@ -2,6 +2,7 @@ module Build (main) where
 
 import Data.Aeson (Object, Value (Object), encode, object, (.=))
 import Data.Aeson.KeyMap qualified as KeyMap
+import Data.Text (pack, stripPrefix)
 import Relude
 import System.Directory (createDirectoryIfMissing)
 import System.FilePath (takeDirectory)
@@ -13,8 +14,9 @@ main = do
 
 writeManifest :: FilePath -> Object -> IO ()
 writeManifest path config = do
+  maybeTag <- lookupEnv "TAG"
   createDirectoryIfMissing True $ takeDirectory path
-  writeFileLBS path $ encode $ Object $ base <> config
+  writeFileLBS path $ encode $ Object $ KeyMap.fromList ["version" .= fromMaybe "0.1.0" (maybeTag >>= stripPrefix "v" <$> pack)] <> base <> config
 
 base :: Object
 base =
@@ -24,8 +26,7 @@ base =
       "permissions"
         .= [ "background" :: Text,
              "nativeMessaging"
-           ],
-      "version" .= ("0.1.0" :: Text)
+           ]
     ]
 
 firefox :: Object
