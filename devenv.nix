@@ -72,7 +72,7 @@
   # The trade-off is that the initial module load is not checked for this specific warning.
   scripts.watch-build.exec = ''
     cd "$DEVENV_ROOT/hs" && ghcid -a \
-    -c 'stack ghci --ghci-options "-ghci-script ghci/build.ghci" --no-load ' \
+    -c 'stack ghci --ghci-options "-ghci-script ghci/build.ghci" --no-load' \
     --no-height-limit \
     -r \
     -s ':set -Wprepositive-qualified-module' \
@@ -80,7 +80,7 @@
   '';
   scripts.watch-host.exec = ''
     cd "$DEVENV_ROOT/hs" && ghcid -a \
-    -c 'stack ghci --ghci-options "-ghci-script ghci/host.ghci" --no-load ' \
+    -c 'stack ghci --ghci-options "-ghci-script ghci/host.ghci" --no-load' \
     --no-height-limit \
     -r \
     -s ':set -Wprepositive-qualified-module' \
